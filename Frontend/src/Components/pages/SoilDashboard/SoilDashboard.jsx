@@ -89,7 +89,7 @@ export default function SoilDashboard() {
         const fetchData = async () => {
             try {
                 const res = await axios.get('/api/v1/soil/data', {
-                    params: { deviceId: 'demo-device-1' },
+                    params: { deviceId: 'DEVICE001' },
                     withCredentials: true,
                 });
                 const d = res.data?.data || [];

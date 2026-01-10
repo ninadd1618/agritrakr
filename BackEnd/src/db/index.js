@@ -1,18 +1,17 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const { DB_NAME } = require('../utils/constants.js');
 
 dotenv.config();
 
-const URI = process.env.MONGODB_URI.replace(/\/$/, ""); // remove trailing slash if any
-
 const connectDB = async () => {
     try {
-        const connectionInstance = await mongoose.connect(`${URI}/${DB_NAME}`, {
+        // Use MONGODB_URI directly - it already includes the database name
+        const connectionInstance = await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
         console.log(`\nMongoDB connected! Host: ${connectionInstance.connection.host}`);
+        console.log(`Database: ${connectionInstance.connection.name}`);
     } catch (error) {
         console.error("MONGODB connection error:", error);
         process.exit(1);

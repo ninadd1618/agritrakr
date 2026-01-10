@@ -40,7 +40,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
       try {
         const [dataRes, idealsRes] = await Promise.all([
           axios.get('/api/v1/soil/data', {
-            params: { deviceId: 'demo-device-1' },
+            params: { deviceId: 'DEVICE001' },
             withCredentials: true,
           }),
           axios.get('/api/v1/soil/ideals', {

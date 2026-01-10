@@ -7,17 +7,34 @@ import { soilService } from '../services/soil.service.js';
 console.log("SOIL CONTROLLER LOADED");
 
 const getSoilData = asyncHandler(async (req, res) => {
-  const { deviceId } = req.query;
+  const { deviceId, limit, start, end } = req.query;
 
-  if (!deviceId) {
-    throw new ApiError(400, "Device ID is required");
+  // Build query filter
+  const filter = {};
+
+  if (deviceId) {
+    filter.deviceId = deviceId;
   }
 
-  const soilData = await soilService.getSoilDataByDeviceId(deviceId);
-
-  if (!soilData || soilData.length === 0) {
-    throw new ApiError(404, "No soil data found for this device ID");
+  // Add date range filter if provided
+  if (start || end) {
+    filter.timestamp = {};
+    if (start) {
+      filter.timestamp.$gte = new Date(start);
+    }
+    if (end) {
+      filter.timestamp.$lte = new Date(end);
+    }
   }
+
+  // Fetch soil data with optional filters
+  const query = SoilData.find(filter).sort({ timestamp: -1 });
+
+  if (limit) {
+    query.limit(parseInt(limit));
+  }
+
+  const soilData = await query.lean();
 
   return res.status(200).json(new ApiResponse(200, soilData, "Soil data fetched successfully"));
 });

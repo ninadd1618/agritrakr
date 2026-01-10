@@ -16,6 +16,9 @@ const soilDataSchema = new Schema(
       type: Number,
       required: true,
     },
+    temp: {
+      type: Number,
+    },
     pH: {
       type: Number,
       required: true,
@@ -31,6 +34,30 @@ const soilDataSchema = new Schema(
     potassium: {
       type: Number,
       required: true,
+    },
+    sulfur: {
+      type: Number,
+    },
+    zinc: {
+      type: Number,
+    },
+    iron: {
+      type: Number,
+    },
+    manganese: {
+      type: Number,
+    },
+    copper: {
+      type: Number,
+    },
+    calcium: {
+      type: Number,
+    },
+    magnesium: {
+      type: Number,
+    },
+    sodium: {
+      type: Number,
     },
     timestamp: {
       type: Date,

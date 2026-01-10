@@ -9,8 +9,8 @@ import { verifyJWT } from '../middlewares/verifyJWT.js';
 const router = Router();
 console.log("SOIL ROUTES LOADED");
 
-// Secured routes for soil data
-router.route("/data").get(verifyJWT, getSoilData).post(verifyJWT, createSoilData);
-router.route("/ideals").get(verifyJWT, getIdealSoilData);
+// Public GET routes for soil data (remove auth for now)
+router.route("/data").get(getSoilData).post(verifyJWT, createSoilData);
+router.route("/ideals").get(getIdealSoilData);
 
 export default router;

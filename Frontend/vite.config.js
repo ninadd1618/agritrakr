@@ -16,10 +16,16 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			},
+			"/api/v1/reports": {
+				target: "http://localhost:4000",
+				changeOrigin: true,
+				secure: false,
+			},
 			"/reports": {
 				target: "http://localhost:4000",
 				changeOrigin: true,
 				secure: false,
+				rewrite: (path) => path.replace(/^\/reports/, '/api/v1/reports'),
 			},
 		},
 	},
