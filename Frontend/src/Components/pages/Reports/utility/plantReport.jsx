@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import {
   CTable,
@@ -28,16 +28,24 @@ const PlantReport = ({ dates }) => {
   // const userData = useSelector((state) => state.auth.userData); // not used in compact table
   const [reportData, setReportData] = useState(null);
 
-  // Provide sensible default date range: last 30 days if none provided
-  const defaultEnd = new Date();
-  const defaultStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const start = dates?.[0] || defaultStart.toISOString();
-  const stop = dates?.[1] || defaultEnd.toISOString();
+  // Provide sensible default date range: last 30 days if none provided.
+  // Use useMemo so these defaults are computed once and do not change
+  // on re-renders (which was causing page to reset to 1).
+  const { startDefault, stopDefault } = useMemo(() => {
+    const defaultEnd = new Date();
+    const defaultStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    return {
+      startDefault: defaultStart.toISOString(),
+      stopDefault: defaultEnd.toISOString(),
+    };
+  }, []);
+  const start = dates?.[0] || startDefault;
+  const stop = dates?.[1] || stopDefault;
 
   useEffect(() => {
     let mounted = true;
     // Use local backend endpoint that returns cached plant rows (served by BackEnd/src/routes/reportRoutes.js)
-    const URL = `/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`;
+    const URL = `/api/v1/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`;
     const fetchReportData = async () => {
       try {
         const response = await fetch(URL, { headers: { 'Content-Type': 'application/json' } });
@@ -151,9 +159,39 @@ const PlantReport = ({ dates }) => {
 
       {/* Pagination controls (simple) */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 12, gap: 12 }}>
-        <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #c8e6c9', background: '#e8f5e9', color: '#2e7d32', fontWeight: 600 }}>Previous</button>
+        <button 
+          disabled={page <= 1} 
+          onClick={() => setPage(p => Math.max(1, p - 1))} 
+          style={{ 
+            padding: '6px 10px', 
+            borderRadius: 6, 
+            border: '1px solid #c8e6c9', 
+            background: page <= 1 ? '#f5f5f5' : '#e8f5e9', 
+            color: page <= 1 ? '#999' : '#2e7d32', 
+            fontWeight: 600,
+            cursor: page <= 1 ? 'not-allowed' : 'pointer',
+            opacity: page <= 1 ? 0.6 : 1
+          }}
+        >
+          Previous
+        </button>
         <div style={{ color: '#2e7d32', fontWeight: 600 }}>{page} / {totalPages}</div>
-        <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #c8e6c9', background: '#e8f5e9', color: '#2e7d32', fontWeight: 600 }}>Next</button>
+        <button 
+          disabled={page >= totalPages} 
+          onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+          style={{ 
+            padding: '6px 10px', 
+            borderRadius: 6, 
+            border: '1px solid #c8e6c9', 
+            background: page >= totalPages ? '#f5f5f5' : '#e8f5e9', 
+            color: page >= totalPages ? '#999' : '#2e7d32', 
+            fontWeight: 600,
+            cursor: page >= totalPages ? 'not-allowed' : 'pointer',
+            opacity: page >= totalPages ? 0.6 : 1
+          }}
+        >
+          Next
+        </button>
       </div>
     </>
   );
