@@ -1,7 +1,7 @@
-const asyncHandler = require('../utils/asyncHandler.js');
-const ApiError = require('../utils/ApiError.js');
-const SoilData = require('../models/SoilData.js');
-const { IDEAL_SOIL_VALUES } = require('../utils/constants.js');
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiError } from '../utils/ApiError.js';
+import { SoilData } from '../models/SoilData.model.js';
+import { IDEAL_SOIL_VALUES } from '../utils/constants.js';
 
 // POST /soil/data - ingest a reading
 const ingestReading = asyncHandler(async (req, res) => {
@@ -86,4 +86,4 @@ const getTableView = asyncHandler(async (req, res) => {
     return res.status(200).json({ status: 200, data: { type, mode, columns: ['date', ...keys], rows } });
 });
 
-module.exports = { ingestReading, queryReadings, getIdeals, getTableView };
+export { ingestReading, queryReadings, getIdeals, getTableView };

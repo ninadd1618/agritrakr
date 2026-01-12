@@ -11,6 +11,11 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			},
+			"/soil": {
+				target: "http://localhost:4000",
+				changeOrigin: true,
+				secure: false,
+			},
 			"/api/v1/soil": {
 				target: "http://localhost:4000",
 				changeOrigin: true,
