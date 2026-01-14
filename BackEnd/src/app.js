@@ -44,6 +44,7 @@ import authRouter from './routes/auth.routes.js';
 import soilRouter from './routes/soil.routes.js';
 import userRouter from './routes/user.routes.js';
 import oeeRouter from './routes/oee.routes.js';
+import dataRouter from './routes/data.routes.js';
 import reportsRouter from './routes/reports.routes.js';
 
 // API routes
@@ -51,6 +52,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/soil', soilRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/oee', oeeRouter);
+app.use('/api/v1/data', dataRouter);
 app.use('/api/v1/reports', reportsRouter);
 
 // 404 handler
