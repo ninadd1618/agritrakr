@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logout Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Logout Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>✅ What to Test:</h2>
+        <ol>
+            <li>Open your React app</li>
+            <li>Login with valid credentials</li>
+            <li>Open browser console (F12)</li>
+            <li>Click the user icon (person icon) in top right</li>
+            <li>Click "logout" in the dropdown</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Expected Console Messages:</h2>
+        <div class="info">
+            <p>You should see these messages in order:</p>
+            <ol>
+                <li><code>"Logout button clicked"</code></li>
+                <li><code>"Calling onLogout function"</code></li>
+                <li><code>"handleLogout called in Home.jsx"</code></li>
+                <li><code>"Calling logout API..."</code></li>
+                <li><code>"Logout API successful"</code> (if API works)</li>
+                <li><code>"Navigating to login page"</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Success Indicators:</h2>
+        <div class="success">
+            <ul>
+                <li>Redirected to login page</li>
+                <li>Redux state cleared (check Redux dev tools)</li>
+                <li>Cookies cleared (check Application tab)</li>
+                <li>Backend logout API called (check Network tab)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>❌ Troubleshooting:</h2>
+        <div class="error">
+            <p><strong>If no console messages appear:</strong></p>
+            <ul>
+                <li>Dropdown might not be opening</li>
+                <li>Click event not working</li>
+                <li>JavaScript errors blocking execution</li>
+            </ul>
+            
+            <p><strong>If console messages appear but no logout:</strong></p>
+            <ul>
+                <li>Check Network tab for API call to <code>/api/v1/auth/logout</code></li>
+                <li>Check if backend server is running</li>
+                <li>Check for CORS errors</li>
+                <li>Check for authentication errors</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Key Fixes Applied:</h2>
+        <div class="info">
+            <ul>
+                <li>✅ Added <code>type="button"</code> to logout IconButton</li>
+                <li>✅ Added <code>preventDefault()</code> and <code>stopPropagation()</code></li>
+                <li>✅ Added proper error handling with <code>finally</code> block</li>
+                <li>✅ Added <code>replace: true</code> to navigation</li>
+                <li>✅ Enhanced debugging with console logs</li>
+                <li>✅ Fixed function type checking</li>
+            </ul>
+        </div>
+</body>
+</html>
