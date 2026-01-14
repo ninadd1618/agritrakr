@@ -1,0 +1,24 @@
+2026-01-11 00:03:24 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:05:20 error: Unhandled Error: E11000 duplicate key error collection: flowmen.users index: username_1 dup key: { username: "palash" } E11000 duplicate key error collection: flowmen.users index: username_1 dup key: { username: "palash" }
+2026-01-11 00:05:46 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:07:12 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:07:57 error: API Error: 409 - User with email or username already exists
+2026-01-11 00:08:22 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:08:24 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:08:25 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:08:25 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:08:25 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:08:26 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:09:46 error: API Error: 500 - Something went wrong while generating refresh and access token
+2026-01-11 00:11:46 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:17:26 error: API Error: 404 - Not Found
+2026-01-11 00:18:51 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:18:57 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:19:02 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:28:59 error: API Error: 404 - Not Found
+2026-01-11 00:35:10 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:36:55 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:38:45 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:55:16 info: ⚙️ Server is running on port: 4000
+2026-01-11 00:58:37 info: ⚙️ Server is running on port: 4000
+2026-01-11 01:11:32 info: ⚙️ Server is running on port: 4000

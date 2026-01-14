@@ -8,6 +8,7 @@ import { errorMiddleware } from './middlewares/error.middleware.js';
 import { ApiError } from './utils/ApiError.js';
 import { appLogger, requestLogger } from './config/logger.js';
 import { env } from './config/env.js';
+import legacySoilRoutes from './routes/soilRoutes.js';
 
 const app = express();
 
@@ -48,6 +49,7 @@ import dataRouter from './routes/data.routes.js';
 import reportsRouter from './routes/reports.routes.js';
 
 // API routes
+app.use('/soil', legacySoilRoutes);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/soil', soilRouter);
 app.use('/api/v1/users', userRouter);

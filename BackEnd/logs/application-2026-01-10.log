@@ -935,3 +935,5 @@
 2026-01-10 21:35:40 error: API Error: 404 - No soil data found for this device ID
 2026-01-10 21:35:40 error: API Error: 404 - No soil data found for this device ID
 2026-01-10 21:37:52 info: ⚙️ Server is running on port: 4000
+2026-01-10 23:52:18 info: ⚙️ Server is running on port: 8000
+2026-01-10 23:58:48 info: ⚙️ Server is running on port: 8000

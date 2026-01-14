@@ -1,0 +1,25 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\pr\\Flowmen-common\\BackEnd\\logs\\.d338ab2753b8e7ce61c5e7cbb445a2ec84366220-audit.json",
+    "files": [
+        {
+            "date": 1768063406210,
+            "name": "D:\\pr\\Flowmen-common\\BackEnd\\logs\\application-2026-01-10.log",
+            "hash": "37c5fe60117b6e3f459ff390eb1a0af3e980b1eab57c07353a4ef6175c7e5787"
+        },
+        {
+            "date": 1768070004005,
+            "name": "D:\\pr\\Flowmen-common\\BackEnd\\logs\\application-2026-01-11.log",
+            "hash": "ccb6bbd43e367aa001e08cb75f4d5c189f8b7af80934fa97ab39e69adc2f30be"
+        },
+        {
+            "date": 1768198451302,
+            "name": "D:\\pr\\Flowmen-common\\BackEnd\\logs\\application-2026-01-12.log",
+            "hash": "6c27a3d8845ef9c7423d4bc6761ac12d9fcf7b4b6fb76e3a70d3456d5332153a"
+        }
+    ],
+    "hashType": "sha256"
+}
