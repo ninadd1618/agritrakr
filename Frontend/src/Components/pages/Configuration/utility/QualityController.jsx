@@ -84,7 +84,7 @@ const QualityController = () => {
     const fetchAllData = async () => {
       try {
         // Fetch soil data
-        const soilUrl = `/soil/data?limit=200&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
+        const soilUrl = `/api/v1/soil/data?limit=200&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
         const soilRes = await axios.get(soilUrl);
         const rows = soilRes.data?.data || [];
 
@@ -132,7 +132,7 @@ const QualityController = () => {
         }
 
         // Fetch plant data
-        const plantRes = await axios.get(`/reports/plant?start=${encodeURIComponent(startDate)}&stop=${encodeURIComponent(endDate)}`);
+        const plantRes = await axios.get(`/api/v1/reports/plant?start=${encodeURIComponent(startDate)}&stop=${encodeURIComponent(endDate)}`);
         const plantData = plantRes.data?.data || [];
 
         // Calculate water usage based on estimated yield
@@ -176,8 +176,8 @@ const QualityController = () => {
       const stop = dates?.[1] || endDate;
 
       // Fetch local plant data
-      const plantRes = await axios.get(`/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`);
-      const soilRes = await axios.get('/soil/data?limit=500');
+      const plantRes = await axios.get(`/api/v1/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`);
+      const soilRes = await axios.get('/api/v1/soil/data?limit=500');
 
       const plantData = plantRes.data?.data || [];
       const soilData = soilRes.data?.data || [];

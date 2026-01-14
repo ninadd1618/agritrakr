@@ -58,7 +58,7 @@ export default function SoilTableView({ dates }) {
         if (dates && dates[1]) params.end = dates[1];
         params.type = type;
         params.mode = mode;
-        const res = await axios.get("/soil/table", { params });
+        const res = await axios.get("/api/v1/soil/table", { params });
         const data = res?.data?.data || {};
         setColumns(data.columns || []);
         setRows(data.rows || []);
