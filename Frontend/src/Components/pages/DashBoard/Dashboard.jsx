@@ -136,7 +136,7 @@ const Dashboard = ({ isOpen, toggle }) => {
     const fetchData = async () => {
       try {
         const res = await axios.get('/api/v1/soil/data', {
-          params: { deviceId: 'DEVICE001' },
+          // Removed deviceId filter to show all sensors
           withCredentials: true,
         });
         const d = res.data?.data || [];

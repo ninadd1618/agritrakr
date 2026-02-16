@@ -34,9 +34,10 @@ const ingestReading = asyncHandler(async (req, res) => {
 
 // GET /soil/data - query readings
 const queryReadings = asyncHandler(async (req, res) => {
-    const { start, end, sensorId, limit = 100 } = req.query;
+    const { start, end, sensorId, deviceId, limit = 100 } = req.query;
     const filter = {};
-    if (sensorId) filter.sensorId = sensorId;
+    if (deviceId) filter.deviceId = deviceId;
+    if (sensorId) filter.deviceId = sensorId; // support legacy sensorId param
     if (start || end) filter.timestamp = {};
     if (start) filter.timestamp.$gte = new Date(start);
     if (end) filter.timestamp.$lte = new Date(end);
@@ -52,9 +53,10 @@ const getIdeals = asyncHandler(async (req, res) => {
 
 // GET /soil/table - table-ready data for reports (macro/micro, count/percentage)
 const getTableView = asyncHandler(async (req, res) => {
-    const { start, end, sensorId, limit = 50, type = 'macro', mode = 'count' } = req.query;
+    const { start, end, sensorId, deviceId, limit = 50, type = 'macro', mode = 'count' } = req.query;
     const filter = {};
-    if (sensorId) filter.sensorId = sensorId;
+    if (deviceId) filter.deviceId = deviceId;
+    if (sensorId) filter.deviceId = sensorId; // support legacy sensorId param
     if (start || end) filter.timestamp = {};
     if (start) filter.timestamp.$gte = new Date(start);
     if (end) filter.timestamp.$lte = new Date(end);

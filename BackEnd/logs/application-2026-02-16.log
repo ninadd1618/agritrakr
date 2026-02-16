@@ -1,0 +1,7 @@
+2026-02-16 11:19:14 info: ⚙️ Server is running on port: 4000
+2026-02-16 11:32:14 info: ⚙️ Server is running on port: 4000
+2026-02-16 11:32:36 error: API Error: 401 - Invalid user credentials
+2026-02-16 11:46:58 info: ⚙️ Server is running on port: 4000
+2026-02-16 11:48:34 error: API Error: 401 - Unauthorized request
+2026-02-16 11:49:27 info: ⚙️ Server is running on port: 4000
+2026-02-16 11:53:20 error: API Error: 404 - Not Found
