@@ -77,7 +77,9 @@ const getTableView = asyncHandler(async (req, res) => {
                 row[k] = null;
             } else if (mode === 'percentage') {
                 const ideal = ideals[k] || 0;
-                row[k] = ideal > 0 ? Number(((v / ideal) * 100).toFixed(1)) : null;
+                // Calculate percentage and cap it at 100
+                const percentage = ideal > 0 ? (v / ideal) * 100 : 0;
+                row[k] = ideal > 0 ? Number(Math.min(percentage, 100).toFixed(1)) : null;
             } else {
                 row[k] = v;
             }

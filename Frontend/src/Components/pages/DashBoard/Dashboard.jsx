@@ -195,7 +195,16 @@ const Dashboard = ({ isOpen, toggle }) => {
         if (chartData.length > 0) {
           const latest = chartData[chartData.length - 1];
           const metrics = ['phosphorus', 'sulfur', 'zinc', 'iron', 'manganese', 'copper', 'potassium', 'calcium', 'magnesium', 'sodium'];
-          const avgNutrient = metrics.reduce((sum, key) => sum + (latest[key] || 0), 0) / metrics.length;
+          
+          // Calculate average nutrient as percentage of ideal values, capped at 100%
+          const nutrientPercentages = metrics.map(key => {
+            const value = latest[key] || 0;
+            const ideal = idealsData[key] || 0;
+            if (ideal === 0) return 0;
+            const percentage = (value / ideal) * 100;
+            return Math.min(percentage, 100); // Cap at 100%
+          });
+          const avgNutrient = nutrientPercentages.reduce((sum, pct) => sum + pct, 0) / metrics.length;
 
           // Count metrics by status
           let critical = 0, warning = 0, good = 0;
@@ -209,7 +218,7 @@ const Dashboard = ({ isOpen, toggle }) => {
           });
 
           setSummaryData({
-            overallHealth: Math.round((latest.moisture / idealsData.moisture) * 100),
+            overallHealth: Math.min(Math.round((latest.moisture / idealsData.moisture) * 100), 100),
             avgNutrient: Math.round(avgNutrient),
             lastUpdate: latest.timestamp,
             moisture: latest.moisture || 0,

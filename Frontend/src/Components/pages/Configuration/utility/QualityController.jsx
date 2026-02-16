@@ -88,22 +88,58 @@ const QualityController = () => {
         const soilRes = await axios.get(soilUrl);
         const rows = soilRes.data?.data || [];
 
+        // Fetch ideal values
+        const idealsRes = await axios.get('/api/v1/soil/ideals');
+        const idealsData = idealsRes.data?.data || {};
+
+        console.log('QualityController - Rows:', rows.length, 'Ideals:', idealsData);
+
         let avgNutrient = null, soilPH = null, nitrogen = null, avgDelta = null;
+        let goodCount = 0, warningCount = 0, criticalCount = 0;
 
         if (rows.length) {
-          // compute average of selected nutrients across latest readings
+          // compute average of selected nutrients as percentage of ideal values, capped at 100%
           const nutrientKeys = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
-          let sum = 0, count = 0;
-          rows.forEach(r => {
-            nutrientKeys.forEach(k => {
-              const v = r[k];
-              if (typeof v === 'number') { sum += v; count += 1; }
-            });
+          const latest = rows[rows.length - 1];
+          
+          console.log('QualityController - Latest row:', latest);
+          
+          // Calculate average nutrient as percentage
+          const nutrientPercentages = [];
+          nutrientKeys.forEach(key => {
+            const value = latest[key];
+            const ideal = idealsData[key];
+            console.log(`QualityController - ${key}: value=${value}, ideal=${ideal}`);
+            if (ideal && ideal > 0 && value != null && value > 0) {
+              const percentage = (value / ideal) * 100;
+              nutrientPercentages.push(Math.min(percentage, 100)); // Cap at 100%
+            }
           });
-          avgNutrient = count > 0 ? +(sum / count).toFixed(1) : null;
+          
+          if (nutrientPercentages.length > 0) {
+            avgNutrient = nutrientPercentages.reduce((sum, pct) => sum + pct, 0) / nutrientPercentages.length;
+            avgNutrient = +avgNutrient.toFixed(1);
+          } else {
+            avgNutrient = null;
+          }
+          
+          console.log('QualityController - Nutrient Percentages:', nutrientPercentages, 'Avg:', avgNutrient);
+
+          // Count metrics by status (Good, Warning, Critical)
+          nutrientKeys.forEach(key => {
+            const value = latest[key];
+            const ideal = idealsData[key];
+            if (ideal && ideal > 0 && value != null) {
+              const deviation = Math.abs(value - ideal);
+              if (deviation >= ideal * 0.2) criticalCount++;
+              else if (deviation >= ideal * 0.1) warningCount++;
+              else goodCount++;
+            }
+          });
+          
+          console.log('QualityController - Status Counts:', { goodCount, warningCount, criticalCount });
 
           // soil pH: use latest reading
-          const latest = rows[rows.length - 1];
           soilPH = latest?.pH ?? null;
 
           // nitrogen proxy: use latest phosphorus
@@ -158,7 +194,10 @@ const QualityController = () => {
           nitrogen,
           waterUsage,
           diseaseIncidence,
-          avgDelta
+          avgDelta,
+          goodCount,
+          warningCount,
+          criticalCount
         });
 
       } catch (err) {
@@ -187,11 +226,16 @@ const QualityController = () => {
       // Summary sheet
       const summarySheet = wb.addWorksheet('Summary');
       summarySheet.addRow(['Metric', 'Value']);
-      summarySheet.addRow(['Average Nutrient', summary.avgNutrient ?? '-']);
+      summarySheet.addRow(['Average Nutrient (%)', summary.avgNutrient ?? '-']);
       summarySheet.addRow(['Soil pH', summary.soilPH ?? '-']);
       summarySheet.addRow(['Nitrogen (proxy)', summary.nitrogen ?? '-']);
       summarySheet.addRow(['Water Usage', summary.waterUsage ?? '-']);
       summarySheet.addRow(['Disease Incidence (%)', summary.diseaseIncidence ?? '-']);
+      summarySheet.addRow([]);  // Empty row for spacing
+      summarySheet.addRow(['Status Overview', '']);
+      summarySheet.addRow(['Good', summary.goodCount ?? 0]);
+      summarySheet.addRow(['Warning', summary.warningCount ?? 0]);
+      summarySheet.addRow(['Critical', summary.criticalCount ?? 0]);
 
       // Plant/Crop report sheet
       const plantSheet = wb.addWorksheet('CropYieldHealthData');
@@ -247,13 +291,13 @@ const QualityController = () => {
       </Header>
 
       <Container>
-        {/* Summary cards */}
-        <CardsGrid>
+        {/* Top Summary cards - Average Nutrient and Status Overview */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 2, marginBottom: 3 }}>
           <Card>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Average Nutrient</Typography>
-                <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.avgNutrient !== null ? `${summary.avgNutrient}%` : '-'}</Typography>
+                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#1b5e20' }}>{summary.avgNutrient !== null ? `${summary.avgNutrient}%` : 'NaN%'}</Typography>
                 <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>All nutrients combined</Typography>
               </div>
               <div>
@@ -269,6 +313,28 @@ const QualityController = () => {
               </div>
             </Box>
           </Card>
+          
+          <Card>
+            <Typography sx={{ fontSize: 12, color: '#2e7d32', marginBottom: 1 }}>Status Overview</Typography>
+            <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'space-around' }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#4caf50' }}>{summary.goodCount || 0}</Typography>
+                <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Good</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#ff9800' }}>{summary.warningCount || 0}</Typography>
+                <Typography sx={{ fontSize: 12, color: '#ffb74d' }}>Warning</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#f44336' }}>{summary.criticalCount || 0}</Typography>
+                <Typography sx={{ fontSize: 12, color: '#e57373' }}>Critical</Typography>
+              </Box>
+            </Box>
+          </Card>
+        </Box>
+
+        {/* Other Summary cards */}
+        <CardsGrid>
           <Card>
             <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Soil pH</Typography>
             <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.soilPH !== null ? summary.soilPH.toFixed(1) : '-'}</Typography>

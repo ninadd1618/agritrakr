@@ -7,27 +7,27 @@ export default defineConfig({
 	server: {
 		proxy: {
 			"/api/v1/auth": {
-				target: "http://localhost:4000",
+				target: "http://localhost:8000",
 				changeOrigin: true,
 				secure: false,
 			},
 			"/soil": {
-				target: "http://localhost:4000",
+				target: "http://localhost:8000",
 				changeOrigin: true,
 				secure: false,
 			},
 			"/api/v1/soil": {
-				target: "http://localhost:4000",
+				target: "http://localhost:8000",
 				changeOrigin: true,
 				secure: false,
 			},
 			"/api/v1/reports": {
-				target: "http://localhost:4000",
+				target: "http://localhost:8000",
 				changeOrigin: true,
 				secure: false,
 			},
 			"/reports": {
-				target: "http://localhost:4000",
+				target: "http://localhost:8000",
 				changeOrigin: true,
 				secure: false,
 				rewrite: (path) => path.replace(/^\/reports/, '/api/v1/reports'),

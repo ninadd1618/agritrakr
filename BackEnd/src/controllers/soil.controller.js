@@ -40,15 +40,21 @@ const getSoilData = asyncHandler(async (req, res) => {
 });
 
 const getIdealSoilData = asyncHandler(async (req, res) => {
-  // In a real application, ideal soil data might come from a configuration
-  // or another service. For now, we'll return a hardcoded example.
+  // Return ideal soil values matching the constants used in calculations
   const idealData = {
-    moisture: { min: 30, max: 60 },
-    temperature: { min: 15, max: 25 },
-    pH: { min: 6.0, max: 7.5 },
-    nitrogen: { min: 100, max: 200 },
-    phosphorus: { min: 50, max: 100 },
-    potassium: { min: 150, max: 300 },
+    moisture: 50,        // percent
+    pH: 6.5,             // optimal pH
+    temp: 20,            // degrees Celsius
+    phosphorus: 70,      // ideal level in ppm
+    sulfur: 60,          // ideal level in ppm
+    zinc: 60,            // ideal level in ppm
+    iron: 60,            // ideal level in ppm
+    manganese: 60,       // ideal level in ppm
+    copper: 60,          // ideal level in ppm
+    potassium: 210,      // ideal level in ppm
+    calcium: 1800,       // ideal level in ppm
+    magnesium: 280,      // ideal level in ppm
+    sodium: 30           // ideal level in ppm
   };
 
   return res.status(200).json(new ApiResponse(200, idealData, "Ideal soil data fetched successfully"));
