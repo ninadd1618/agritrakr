@@ -44,13 +44,14 @@ const getIdealSoilData = asyncHandler(async (req, res) => {
   const idealData = {
     moisture: 50,        // percent
     pH: 6.5,             // optimal pH
-    temp: 20,            // degrees Celsius
+    temperature: 20,     // degrees Celsius
+    nitrogen: 150,       // ideal level in ppm
     phosphorus: 70,      // ideal level in ppm
-    sulfur: 60,          // ideal level in ppm
-    zinc: 60,            // ideal level in ppm
-    iron: 60,            // ideal level in ppm
-    manganese: 60,       // ideal level in ppm
-    copper: 60,          // ideal level in ppm
+    sulfur: 20,          // ideal level in ppm
+    zinc: 8,             // ideal level in ppm
+    iron: 12,            // ideal level in ppm
+    manganese: 8,        // ideal level in ppm
+    copper: 3,           // ideal level in ppm
     potassium: 210,      // ideal level in ppm
     calcium: 1800,       // ideal level in ppm
     magnesium: 280,      // ideal level in ppm
@@ -61,7 +62,7 @@ const getIdealSoilData = asyncHandler(async (req, res) => {
 });
 
 const createSoilData = asyncHandler(async (req, res) => {
-  const { deviceId, moisture, temperature, pH, nitrogen, phosphorus, potassium } = req.body;
+  const { deviceId, moisture, temperature, pH, nitrogen, phosphorus, potassium, sulfur, zinc, iron, manganese, copper, calcium, magnesium, sodium } = req.body;
 
   if (!deviceId || [moisture, temperature, pH, nitrogen, phosphorus, potassium].some(field => field === undefined || field === null)) {
     throw new ApiError(400, "All soil data fields are required");
@@ -75,6 +76,14 @@ const createSoilData = asyncHandler(async (req, res) => {
     nitrogen,
     phosphorus,
     potassium,
+    sulfur,
+    zinc,
+    iron,
+    manganese,
+    copper,
+    calcium,
+    magnesium,
+    sodium,
   });
 
   return res.status(201).json(new ApiResponse(201, newSoilData, "Soil data created successfully"));

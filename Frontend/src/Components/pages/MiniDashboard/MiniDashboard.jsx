@@ -62,9 +62,9 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
           moisture: normalizeIdeal('moisture', 50),
           pH: normalizeIdeal('pH', 6.5),
           temperature: normalizeIdeal('temperature', 20),
-          phosphorus: normalizeIdeal('phosphorus', 60),
-          potassium: normalizeIdeal('potassium', 60),
-          nitrogen: normalizeIdeal('nitrogen', 60),
+          phosphorus: normalizeIdeal('phosphorus', 70),
+          potassium: normalizeIdeal('potassium', 210),
+          nitrogen: normalizeIdeal('nitrogen', 150),
         };
 
         setIdeals(idealsData);
@@ -110,10 +110,10 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
   const safeIdeals = {
     moisture: ideals?.moisture || 50,
     pH: ideals?.pH || 6.5,
-    temperature: ideals?.temp || 20,
-    phosphorus: ideals?.phosphorus || 60,
-    potassium: ideals?.potassium || 60,
-    nitrogen: ideals?.nitrogen || 60
+    temperature: ideals?.temperature || 20,
+    phosphorus: ideals?.phosphorus || 70,
+    potassium: ideals?.potassium || 210,
+    nitrogen: ideals?.nitrogen || 150
   };
 
 

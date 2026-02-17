@@ -145,7 +145,8 @@ const Dashboard = ({ isOpen, toggle }) => {
           timestamp: item.timestamp,
           moisture: item.moisture,
           pH: item.pH,
-          temp: item.temp,
+          temperature: item.temperature,
+          nitrogen: item.nitrogen,
           phosphorus: item.phosphorus,
           sulfur: item.sulfur,
           zinc: item.zinc,
@@ -176,17 +177,18 @@ const Dashboard = ({ isOpen, toggle }) => {
         const idealsData = {
           moisture: normalizeIdeal('moisture', 50),
           pH: normalizeIdeal('pH', 6.5),
-          temp: normalizeIdeal('temperature', 20),
-          phosphorus: normalizeIdeal('phosphorus', 60),
-          sulfur: normalizeIdeal('sulfur', 60),
-          zinc: normalizeIdeal('zinc', 60),
-          iron: normalizeIdeal('iron', 60),
-          manganese: normalizeIdeal('manganese', 60),
-          copper: normalizeIdeal('copper', 60),
-          potassium: normalizeIdeal('potassium', 60),
-          calcium: normalizeIdeal('calcium', 60),
-          magnesium: normalizeIdeal('magnesium', 60),
-          sodium: normalizeIdeal('sodium', 60),
+          temperature: normalizeIdeal('temperature', 20),
+          nitrogen: normalizeIdeal('nitrogen', 150),
+          phosphorus: normalizeIdeal('phosphorus', 70),
+          sulfur: normalizeIdeal('sulfur', 20),
+          zinc: normalizeIdeal('zinc', 8),
+          iron: normalizeIdeal('iron', 12),
+          manganese: normalizeIdeal('manganese', 8),
+          copper: normalizeIdeal('copper', 3),
+          potassium: normalizeIdeal('potassium', 210),
+          calcium: normalizeIdeal('calcium', 1800),
+          magnesium: normalizeIdeal('magnesium', 280),
+          sodium: normalizeIdeal('sodium', 30),
         };
 
         setIdeals(idealsData);
@@ -195,7 +197,7 @@ const Dashboard = ({ isOpen, toggle }) => {
         if (chartData.length > 0) {
           const latest = chartData[chartData.length - 1];
           const metrics = ['phosphorus', 'sulfur', 'zinc', 'iron', 'manganese', 'copper', 'potassium', 'calcium', 'magnesium', 'sodium'];
-          
+
           // Calculate average nutrient as percentage of ideal values, capped at 100%
           const nutrientPercentages = metrics.map(key => {
             const value = latest[key] || 0;
@@ -217,13 +219,29 @@ const Dashboard = ({ isOpen, toggle }) => {
             else good++;
           });
 
+          // Calculate overall health score from key metrics (moisture, pH, N, P, K)
+          const keyMetrics = ['moisture', 'pH', 'nitrogen', 'phosphorus', 'potassium'];
+          const keyScores = keyMetrics.map(key => {
+            const value = latest[key] || 0;
+            const ideal = idealsData[key] || 1;
+            const deviation = Math.abs(value - ideal);
+            const deviationPercent = (deviation / ideal) * 100;
+            // Score from 0-100: 100 if within 5%, 90 if within 10%, 70 if within 20%, else lower
+            if (deviationPercent <= 5) return 100;
+            if (deviationPercent <= 10) return 90;
+            if (deviationPercent <= 20) return 70;
+            if (deviationPercent <= 30) return 50;
+            return Math.max(20, 100 - deviationPercent);
+          });
+          const overallHealth = Math.round(keyScores.reduce((a, b) => a + b, 0) / keyScores.length);
+
           setSummaryData({
-            overallHealth: Math.min(Math.round((latest.moisture / idealsData.moisture) * 100), 100),
+            overallHealth: overallHealth,
             avgNutrient: Math.round(avgNutrient),
             lastUpdate: latest.timestamp,
             moisture: latest.moisture || 0,
             pH: latest.pH || 0,
-            temp: latest.temp || 0,
+            temp: latest.temperature || 0,
             criticalCount: critical,
             warningCount: warning,
             goodCount: good
@@ -241,10 +259,11 @@ const Dashboard = ({ isOpen, toggle }) => {
   const environmentalMetrics = [
     { key: 'moisture', label: 'Soil Moisture', unit: '%' },
     { key: 'pH', label: 'Soil pH', unit: '' },
-    { key: 'temp', label: 'Soil Temperature', unit: '°C' }
+    { key: 'temperature', label: 'Soil Temperature', unit: '°C' }
   ];
 
   const nutrients = [
+    { key: 'nitrogen', label: 'Nitrogen (N)', unit: '%' },
     { key: 'phosphorus', label: 'Phosphorus (P)', unit: '%' },
     { key: 'sulfur', label: 'Sulfur (S)', unit: '%' },
     { key: 'zinc', label: 'Zinc (Zn)', unit: '%' },
@@ -400,7 +419,8 @@ const Dashboard = ({ isOpen, toggle }) => {
                 timestamp: new Date(d.timestamp).toISOString(),
                 moisture: d.moisture,
                 pH: d.pH,
-                temp: d.temp,
+                temperature: d.temperature,
+                nitrogen: d.nitrogen,
                 phosphorus: d.phosphorus,
                 sulfur: d.sulfur,
                 zinc: d.zinc,

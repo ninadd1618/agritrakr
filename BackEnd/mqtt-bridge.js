@@ -64,6 +64,14 @@ client.on('message', async (topic, message) => {
             nitrogen: parseFloat(sensorData.nitrogen || sensorData.n || 100),
             phosphorus: parseFloat(sensorData.phosphorus || sensorData.p || 50),
             potassium: parseFloat(sensorData.potassium || sensorData.k || 150),
+            sulfur: parseFloat(sensorData.sulfur || sensorData.s || 0),
+            zinc: parseFloat(sensorData.zinc || sensorData.zn || 0),
+            iron: parseFloat(sensorData.iron || sensorData.fe || 0),
+            manganese: parseFloat(sensorData.manganese || sensorData.mn || 0),
+            copper: parseFloat(sensorData.copper || sensorData.cu || 0),
+            calcium: parseFloat(sensorData.calcium || sensorData.ca || 0),
+            magnesium: parseFloat(sensorData.magnesium || sensorData.mg || 0),
+            sodium: parseFloat(sensorData.sodium || sensorData.na || 0),
         };
 
         console.log('🔄 Transformed payload:', JSON.stringify(payload, null, 2));
