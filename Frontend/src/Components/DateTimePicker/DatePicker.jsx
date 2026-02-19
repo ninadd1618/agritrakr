@@ -1,5 +1,5 @@
 import { DatePicker } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setDate } from '../../redux/dateSlice';
@@ -8,8 +8,8 @@ const { RangePicker } = DatePicker;
 
 // Default date range: December 20-29, 2025
 const defaultDates = [
-    moment('2025-12-20'),
-    moment('2025-12-29')
+    dayjs('2025-12-20'),
+    dayjs('2025-12-29')
 ];
 
 const Datepicker = () => {
@@ -24,8 +24,14 @@ const Datepicker = () => {
 
     const handleChange = (values) => {
         if (values && values.length === 2) {
-            const formattedDates = values.map(item => item.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'));
-            setDateState(values);
+            // Ensure we're working with dayjs objects and set proper time boundaries
+            const startDate = dayjs(values[0]).startOf('day');
+            const endDate = dayjs(values[1]).endOf('day');
+            const formattedDates = [
+                startDate.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+                endDate.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+            ];
+            setDateState([startDate, endDate]);
             dispatch(setDate({ dates: formattedDates }));
         } else {
             setDateState(defaultDates);
@@ -40,6 +46,7 @@ const Datepicker = () => {
                 onChange={handleChange}
                 value={date}
                 defaultValue={defaultDates}
+                format="YYYY-MM-DD"
                 style={{
                     backgroundColor: 'white',
                     border: '2px solid #66bb6a',
