@@ -101,9 +101,9 @@ const QualityController = () => {
           // compute average of selected nutrients as percentage of ideal values, capped at 100%
           const nutrientKeys = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
           const latest = rows[rows.length - 1];
-          
+
           console.log('QualityController - Latest row:', latest);
-          
+
           // Calculate average nutrient as percentage
           const nutrientPercentages = [];
           nutrientKeys.forEach(key => {
@@ -115,14 +115,14 @@ const QualityController = () => {
               nutrientPercentages.push(Math.min(percentage, 100)); // Cap at 100%
             }
           });
-          
+
           if (nutrientPercentages.length > 0) {
             avgNutrient = nutrientPercentages.reduce((sum, pct) => sum + pct, 0) / nutrientPercentages.length;
             avgNutrient = +avgNutrient.toFixed(1);
           } else {
             avgNutrient = null;
           }
-          
+
           console.log('QualityController - Nutrient Percentages:', nutrientPercentages, 'Avg:', avgNutrient);
 
           // Count metrics by status (Good, Warning, Critical)
@@ -136,7 +136,7 @@ const QualityController = () => {
               else goodCount++;
             }
           });
-          
+
           console.log('QualityController - Status Counts:', { goodCount, warningCount, criticalCount });
 
           // soil pH: use latest reading
@@ -181,7 +181,7 @@ const QualityController = () => {
         // Calculate disease incidence from health status
         let diseaseIncidence = null;
         if (plantData.length) {
-          const diseased = plantData.filter(r => 
+          const diseased = plantData.filter(r =>
             r.healthStatus && /disease|unhealthy|poor/i.test(String(r.healthStatus))
           ).length;
           diseaseIncidence = +((diseased / plantData.length) * 100).toFixed(1);
@@ -222,7 +222,7 @@ const QualityController = () => {
       const soilData = soilRes.data?.data || [];
 
       const wb = new ExcelJS.Workbook();
-      
+
       // Summary sheet
       const summarySheet = wb.addWorksheet('Summary');
       summarySheet.addRow(['Metric', 'Value']);
@@ -280,8 +280,8 @@ const QualityController = () => {
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 1 }}>
           <Datepicker />
-          <Button variant="contained" sx={{ 
-            marginLeft: 'auto', 
+          <Button variant="contained" sx={{
+            marginLeft: 'auto',
             background: 'linear-gradient(135deg, #66bb6a 0%, #aed581 100%)',
             '&:hover': {
               background: 'linear-gradient(135deg, #4caf50 0%, #9ccc65 100%)',
@@ -297,7 +297,7 @@ const QualityController = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Average Nutrient</Typography>
-                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#1b5e20' }}>{summary.avgNutrient !== null ? `${summary.avgNutrient}%` : 'NaN%'}</Typography>
+                <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#1b5e20' }}>{summary.avgNutrient !== null ? `${summary.avgNutrient}%` : '-'}</Typography>
                 <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>All nutrients combined</Typography>
               </div>
               <div>
@@ -313,7 +313,7 @@ const QualityController = () => {
               </div>
             </Box>
           </Card>
-          
+
           <Card>
             <Typography sx={{ fontSize: 12, color: '#2e7d32', marginBottom: 1 }}>Status Overview</Typography>
             <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'space-around' }}>

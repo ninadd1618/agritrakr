@@ -63,13 +63,21 @@ export default function SoilTableView({ dates }) {
         const res = await axios.get("/api/v1/soil/table", { params });
         const data = res?.data?.data || {};
         setColumns(data.columns || []);
-        setRows(data.rows || []);
+        // ensure table rows are sorted latest-first by date/timestamp
+        const rawRows = data.rows || [];
+        const sortedRows = rawRows.slice().sort((a, b) => {
+          const ta = a.date || a.timestamp || a.ts || 0;
+          const tb = b.date || b.timestamp || b.ts || 0;
+          return new Date(tb) - new Date(ta);
+        });
+        setRows(sortedRows);
 
-        // Fetch raw soil data for status calculation
+        // Fetch raw soil data for status calculation - DO NOT filter by type to match Dashboard
         const soilParams = {};
         if (dates && dates[0]) soilParams.start = dates[0];
         if (dates && dates[1]) soilParams.end = dates[1];
         soilParams.limit = 100;
+        // Note: NOT passing type parameter here - we need ALL nutrients for status calculation
         const soilRes = await axios.get("/api/v1/soil/data", { params: soilParams });
         const soilData = soilRes.data?.data || [];
 
@@ -77,46 +85,76 @@ export default function SoilTableView({ dates }) {
         const idealsRes = await axios.get("/api/v1/soil/ideals");
         const idealsData = idealsRes.data?.data || {};
 
-        // Get latest raw data for status calculation
+        // Get latest raw data for status calculation - use sorted descending by timestamp
         if (soilData && soilData.length > 0) {
-          const latest = soilData[soilData.length - 1];
-          const nutrientKeys = type === 'macro' 
-            ? ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur']
-            : ['iron', 'manganese', 'zinc', 'copper', 'sodium'];
+          const sortedSoil = soilData.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          const toNum = v => { const n = Number(v); return Number.isFinite(n) ? n : null; };
+          const getLastValue = (key) => {
+            for (let i = 0; i < sortedSoil.length; i++) {
+              const v = sortedSoil[i][key];
+              const n = toNum(v);
+              if (n != null) return n;
+            }
+            return null;
+          };
 
-          console.log('SoilTableView - Raw data count:', soilData.length, 'Latest:', latest, 'Ideals:', idealsData);
+          // Define macro and micro nutrients
+          const macroNutrients = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
+          const microNutrients = ['iron', 'manganese', 'zinc', 'copper'];
+
+          // Use only the nutrients being displayed based on type tab
+          const nutrientKeys = type === 'macro' ? macroNutrients : microNutrients;
+
+          // Normalize ideals - only use genuine database values, no fallbacks
+          const normalizeIdeal = (field) => {
+            const v = idealsData[field];
+            if (typeof v === 'number') return v;
+            if (v && typeof v === 'object' && v.min != null && v.max != null) return (Number(v.min) + Number(v.max)) / 2;
+            return null;
+          };
+
+          // Pre-normalize all ideals - only genuine database values
+          const idealsNormalized = {
+            moisture: normalizeIdeal('moisture'),
+            pH: normalizeIdeal('pH'),
+            temperature: normalizeIdeal('temperature'),
+            nitrogen: normalizeIdeal('nitrogen'),
+            phosphorus: normalizeIdeal('phosphorus'),
+            sulfur: normalizeIdeal('sulfur'),
+            zinc: normalizeIdeal('zinc'),
+            iron: normalizeIdeal('iron'),
+            manganese: normalizeIdeal('manganese'),
+            copper: normalizeIdeal('copper'),
+            potassium: normalizeIdeal('potassium'),
+            calcium: normalizeIdeal('calcium'),
+            magnesium: normalizeIdeal('magnesium')
+          };
 
           let good = 0, warning = 0, critical = 0;
           const nutrientPercentages = [];
 
+          // Count status and avg only for displayed nutrients (macro or micro)
           nutrientKeys.forEach(key => {
-            const value = latest[key] || 0;
-            const ideal = idealsData[key] || 0;
-            console.log(`SoilTableView - ${key}: value=${value}, ideal=${ideal}`);
-            if (ideal > 0 && value > 0) {
-              const deviation = Math.abs(value - ideal);
-              const percentage = Math.min((value / ideal) * 100, 100);
-              nutrientPercentages.push(percentage);
-              
-              if (deviation >= ideal * 0.2) critical++;
-              else if (deviation >= ideal * 0.1) warning++;
-              else good++;
-            }
+            const value = getLastValue(key);
+            const ideal = idealsNormalized[key];
+            if (value == null || ideal == null || ideal === 0) return;
+            const percentage = (value / ideal) * 100;
+            nutrientPercentages.push(Math.min(percentage, 100));
+            const deviation = Math.abs(value - ideal);
+            if (deviation >= ideal * 0.2) critical++;
+            else if (deviation >= ideal * 0.1) warning++;
+            else good++;
           });
 
-          console.log('SoilTableView - Status:', { good, warning, critical }, 'Percentages:', nutrientPercentages);
-
           setStatusCounts({ good, warning, critical });
-          
-          // Calculate average nutrient percentage
+
           if (nutrientPercentages.length > 0) {
             const avg = nutrientPercentages.reduce((sum, pct) => sum + pct, 0) / nutrientPercentages.length;
-            setAvgNutrient(avg.toFixed(1));
+            setAvgNutrient((Math.round(avg * 10) / 10).toFixed(1));
           } else {
             setAvgNutrient(null);
           }
         } else {
-          console.log('SoilTableView - No soil data available');
           setStatusCounts({ good: 0, warning: 0, critical: 0 });
           setAvgNutrient(null);
         }
@@ -133,11 +171,11 @@ export default function SoilTableView({ dates }) {
     fetchData();
   }, [dates, type, mode]);
 
-  const visibleColumns = useMemo(() => columns, [columns]);
+  const visibleColumns = useMemo(() => columns.filter(c => c !== 'sodium'), [columns]);
 
   const handleExportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    
+
     // Summary Sheet
     const summarySheet = workbook.addWorksheet("Summary");
     summarySheet.addRow(['Metric', 'Value']);
@@ -147,7 +185,7 @@ export default function SoilTableView({ dates }) {
     summarySheet.addRow(['Good', statusCounts.good]);
     summarySheet.addRow(['Warning', statusCounts.warning]);
     summarySheet.addRow(['Critical', statusCounts.critical]);
-    
+
     // Nutrient Data Sheet
     const worksheet = workbook.addWorksheet("Nutrient Table");
     const header = visibleColumns.map((c) => (c === "date" ? "Date" : c.charAt(0).toUpperCase() + c.slice(1)));
@@ -210,10 +248,10 @@ export default function SoilTableView({ dates }) {
 
       {/* Summary Cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, marginBottom: 2 }}>
-        <Box sx={{ 
-          background: '#fff', 
-          padding: 2, 
-          borderRadius: 2, 
+        <Box sx={{
+          background: '#fff',
+          padding: 2,
+          borderRadius: 2,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           border: '1px solid #e0e0e0'
         }}>
@@ -223,11 +261,11 @@ export default function SoilTableView({ dates }) {
           </Typography>
           <Typography sx={{ fontSize: 11, color: '#999' }}>All nutrients combined</Typography>
         </Box>
-        
-        <Box sx={{ 
-          background: '#fff', 
-          padding: 2, 
-          borderRadius: 2, 
+
+        <Box sx={{
+          background: '#fff',
+          padding: 2,
+          borderRadius: 2,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           border: '1px solid #e0e0e0'
         }}>
@@ -270,10 +308,10 @@ export default function SoilTableView({ dates }) {
                 <CTableRow key={idx} color={idx % 2 === 0 ? "" : "light"}>
                   {visibleColumns.map((c) => (
                     <CTableDataCell key={c}>
-                      {c === "date" 
-                        ? (r[c] ? formatDate(r[c]) : "-") 
-                        : (r[c] === null || r[c] === undefined 
-                          ? "-" 
+                      {c === "date"
+                        ? (r[c] ? formatDate(r[c]) : "-")
+                        : (r[c] === null || r[c] === undefined
+                          ? "-"
                           : mode === "percentage" ? `${r[c]}%` : r[c]
                         )
                       }

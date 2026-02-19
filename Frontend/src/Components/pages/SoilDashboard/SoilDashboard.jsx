@@ -92,21 +92,22 @@ export default function SoilDashboard() {
                     withCredentials: true,
                 });
                 const d = res.data?.data || [];
+                const toNum = v => { const n = Number(v); return Number.isFinite(n) ? n : null; };
                 const chartData = d.map(item => ({
                     timestamp: item.timestamp,
-                    moisture: item.moisture,
-                    pH: item.pH,
-                    temperature: item.temperature,
-                    phosphorus: item.phosphorus,
-                    sulfur: item.sulfur,
-                    zinc: item.zinc,
-                    iron: item.iron,
-                    manganese: item.manganese,
-                    copper: item.copper,
-                    potassium: item.potassium,
-                    calcium: item.calcium,
-                    magnesium: item.magnesium,
-                    sodium: item.sodium
+                    moisture: toNum(item.moisture),
+                    pH: toNum(item.pH),
+                    temperature: toNum(item.temperature),
+                    phosphorus: toNum(item.phosphorus),
+                    sulfur: toNum(item.sulfur),
+                    zinc: toNum(item.zinc),
+                    iron: toNum(item.iron),
+                    manganese: toNum(item.manganese),
+                    copper: toNum(item.copper),
+                    potassium: toNum(item.potassium),
+                    calcium: toNum(item.calcium),
+                    magnesium: toNum(item.magnesium),
+                    sodium: toNum(item.sodium)
                 }));
                 setData(chartData);
                 const idealsRes = await axios.get('/api/v1/soil/ideals', {
@@ -141,13 +142,29 @@ export default function SoilDashboard() {
 
                 setIdeals(idealsData);
 
-                // Calculate summary stats
+                // Calculate summary stats with safe numeric handling
                 if (chartData.length > 0) {
                     const latest = chartData[chartData.length - 1];
                     const metrics = ['phosphorus', 'sulfur', 'zinc', 'iron', 'manganese', 'copper', 'potassium', 'calcium', 'magnesium'];
-                    const avgNutrient = metrics.reduce((sum, key) => sum + (latest[key] || 0), 0) / metrics.length;
+
+                    // Compute nutrient percentages relative to ideals (cap at 100%)
+                    const nutrientPercentages = metrics.map(key => {
+                        const value = Number(latest[key]);
+                        const ideal = Number(idealsData[key]);
+                        if (!Number.isFinite(value) || !Number.isFinite(ideal) || ideal === 0) return 0;
+                        const pct = (value / ideal) * 100;
+                        return Math.min(pct, 100);
+                    });
+                    const avgNutrient = nutrientPercentages.reduce((sum, p) => sum + p, 0) / metrics.length;
+
+                    const moistureVal = Number(latest.moisture);
+                    const moistureIdeal = Number(idealsData.moisture);
+                    const overallHealth = (Number.isFinite(moistureVal) && Number.isFinite(moistureIdeal) && moistureIdeal > 0)
+                        ? Math.round((moistureVal / moistureIdeal) * 100)
+                        : 0;
+
                     setSummaryData({
-                        overallHealth: Math.round((latest.moisture / idealsData.moisture) * 100),
+                        overallHealth: overallHealth,
                         avgNutrient: Math.round(avgNutrient),
                         lastUpdate: latest.timestamp
                     });
