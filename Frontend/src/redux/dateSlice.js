@@ -1,9 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Default date range: December 20-29, 2025 (matching seeded data)
+const defaultStartDate = '2025-12-20T00:00:00.000Z';
+const defaultEndDate = '2025-12-29T23:59:59.000Z';
 
 const initialState = {
     status: false,
-    dates: []
+    dates: [defaultStartDate, defaultEndDate]
 };
 
 const dateSlice = createSlice({

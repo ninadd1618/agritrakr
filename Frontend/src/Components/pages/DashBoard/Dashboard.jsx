@@ -207,8 +207,9 @@ const Dashboard = ({ isOpen, toggle }) => {
                     // include environmental metrics in the status counts
                     const statusMetrics = nutrientKeys.concat(['moisture', 'pH', 'temperature']);
 
+                    // Get latest value - data is sorted descending by timestamp from API, so index 0 is newest
                     const getLastValue = (key) => {
-                        for (let i = chartData.length - 1; i >= 0; i--) {
+                        for (let i = 0; i < chartData.length; i++) {
                             const v = chartData[i][key];
                             if (v !== null && v !== undefined) return Number.isFinite(Number(v)) ? Number(v) : null;
                         }

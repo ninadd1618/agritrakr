@@ -18,15 +18,15 @@ const connectDB = async () => {
 // Generate random data within realistic ranges
 const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-// Generate timestamps for the last 30 days
+// Generate timestamps for December 20-29, 2025 (10 days)
 const generateTimestamps = (count) => {
     const timestamps = [];
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const startDate = new Date('2025-12-20T00:00:00.000Z');
+    const endDate = new Date('2025-12-29T23:59:59.000Z');
 
     for (let i = 0; i < count; i++) {
         const randomTime = new Date(
-            thirtyDaysAgo.getTime() + Math.random() * (now.getTime() - thirtyDaysAgo.getTime())
+            startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
         );
         timestamps.push(randomTime);
     }

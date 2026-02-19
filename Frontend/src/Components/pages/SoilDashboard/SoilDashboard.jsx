@@ -144,7 +144,8 @@ export default function SoilDashboard() {
 
                 // Calculate summary stats with safe numeric handling
                 if (chartData.length > 0) {
-                    const latest = chartData[chartData.length - 1];
+                    // Data is sorted descending by timestamp from API, so index 0 is newest (latest)
+                    const latest = chartData[0];
                     const metrics = ['phosphorus', 'sulfur', 'zinc', 'iron', 'manganese', 'copper', 'potassium', 'calcium', 'magnesium'];
 
                     // Compute nutrient percentages relative to ideals (cap at 100%)

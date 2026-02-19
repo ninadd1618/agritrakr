@@ -3,14 +3,15 @@ import { env } from '../config/env.js';
 import { SoilData } from '../models/SoilData.model.js';
 import { FinalData } from '../models/FinalData.model.js';
 
-// Generate realistic fake soil data
-const generateFakeSoilData = (deviceId, count = 100) => {
+// Generate realistic fake soil data for December 2025 (10 days)
+const generateFakeSoilData = (deviceId, count = 10) => {
   const data = [];
-  const now = new Date();
+  // Start from December 20, 2025 and generate hourly data for 10 days
+  const startDate = new Date('2025-12-20T00:00:00.000Z');
   
   for (let i = 0; i < count; i++) {
-    // Generate timestamp for each hour going back
-    const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000));
+    // Generate timestamp for each entry (every 24 hours for daily data)
+    const timestamp = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
     
     data.push({
       deviceId,
@@ -36,14 +37,15 @@ const generateFakeSoilData = (deviceId, count = 100) => {
   return data;
 };
 
-// Generate fake OEE/PLC data
-const generateFakeFinalData = (deviceId, count = 100) => {
+// Generate fake OEE/PLC data for December 2025 (10 days)
+const generateFakeFinalData = (deviceId, count = 10) => {
   const data = [];
-  const now = new Date();
+  // Start from December 20, 2025
+  const startDate = new Date('2025-12-20T00:00:00.000Z');
   
   for (let i = 0; i < count; i++) {
-    // Generate timestamp for each hour going back
-    const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000));
+    // Generate timestamp for each day
+    const timestamp = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
     
     data.push({
       deviceId,
@@ -86,20 +88,20 @@ const seedAllData = async () => {
     ];
 
     // Generate and insert soil data
-    console.log('\n📊 Seeding soil nutrients data...');
+    console.log('\n📊 Seeding soil nutrients data (Dec 20-29, 2025)...');
     let totalSoilRecords = 0;
     for (const deviceId of soilDeviceIds) {
-      const fakeData = generateFakeSoilData(deviceId, 168); // 1 week of hourly data
+      const fakeData = generateFakeSoilData(deviceId, 10); // 10 days of data (Dec 20-29, 2025)
       await SoilData.insertMany(fakeData);
       totalSoilRecords += fakeData.length;
       console.log(`  ✅ Inserted ${fakeData.length} records for ${deviceId}`);
     }
 
     // Generate and insert OEE data
-    console.log('\n⚙️ Seeding OEE/PLC data...');
+    console.log('\n⚙️ Seeding OEE/PLC data (Dec 20-29, 2025)...');
     let totalOeeRecords = 0;
     for (const deviceId of oeeDeviceIds) {
-      const fakeData = generateFakeFinalData(deviceId, 168); // 1 week of hourly data
+      const fakeData = generateFakeFinalData(deviceId, 10); // 10 days of data (Dec 20-29, 2025)
       await FinalData.insertMany(fakeData);
       totalOeeRecords += fakeData.length;
       console.log(`  ✅ Inserted ${fakeData.length} records for ${deviceId}`);

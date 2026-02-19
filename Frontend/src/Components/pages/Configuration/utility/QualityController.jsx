@@ -63,11 +63,69 @@ const Container = styled(Box)`
   }
 `;
 
+// Helper function to determine status based on thresholds
+const getMetricStatus = (metric, value, idealValue = null) => {
+  if (value === null || value === undefined) return { status: 'N/A', color: '#9e9e9e', bgColor: '#f5f5f5' };
+  
+  switch (metric) {
+    case 'avgNutrient':
+      // Percentage-based: >=90% Good, 80-90% Warning, <80% Critical
+      if (value >= 90) return { status: 'Good', color: '#4caf50', bgColor: '#e8f5e9' };
+      if (value >= 80) return { status: 'Warning', color: '#ff9800', bgColor: '#fff3e0' };
+      return { status: 'Critical', color: '#f44336', bgColor: '#ffebee' };
+    
+    case 'soilPH':
+      // Ideal pH is 6.0-7.5
+      if (value >= 6.0 && value <= 7.5) return { status: 'Good', color: '#4caf50', bgColor: '#e8f5e9' };
+      if (value >= 5.5 && value <= 8.0) return { status: 'Warning', color: '#ff9800', bgColor: '#fff3e0' };
+      return { status: 'Critical', color: '#f44336', bgColor: '#ffebee' };
+    
+    case 'nitrogen':
+      // Nitrogen proxy (phosphorus): ideal ~70 ppm, ±10% Good, 10-20% Warning, >20% Critical
+      const nitrogenIdeal = idealValue || 70;
+      const nitrogenDeviation = Math.abs(value - nitrogenIdeal) / nitrogenIdeal;
+      if (nitrogenDeviation <= 0.1) return { status: 'Good', color: '#4caf50', bgColor: '#e8f5e9' };
+      if (nitrogenDeviation <= 0.2) return { status: 'Warning', color: '#ff9800', bgColor: '#fff3e0' };
+      return { status: 'Critical', color: '#f44336', bgColor: '#ffebee' };
+    
+    case 'waterUsage':
+      // Water usage: lower is better. <ideal Good, ideal-1.5x Warning, >1.5x Critical
+      const waterIdeal = idealValue || 500;
+      if (value <= waterIdeal) return { status: 'Good', color: '#4caf50', bgColor: '#e8f5e9' };
+      if (value <= waterIdeal * 1.5) return { status: 'Warning', color: '#ff9800', bgColor: '#fff3e0' };
+      return { status: 'Critical', color: '#f44336', bgColor: '#ffebee' };
+    
+    case 'diseaseIncidence':
+      // Disease: lower is better. <5% Good, 5-15% Warning, >15% Critical
+      if (value < 5) return { status: 'Good', color: '#4caf50', bgColor: '#e8f5e9' };
+      if (value <= 15) return { status: 'Warning', color: '#ff9800', bgColor: '#fff3e0' };
+      return { status: 'Critical', color: '#f44336', bgColor: '#ffebee' };
+    
+    default:
+      return { status: 'N/A', color: '#9e9e9e', bgColor: '#f5f5f5' };
+  }
+};
+
+// Status badge component
+const StatusBadge = ({ status, color, bgColor }) => (
+  <span style={{
+    padding: '4px 10px',
+    borderRadius: 12,
+    background: bgColor,
+    color: color,
+    fontWeight: 600,
+    fontSize: 11,
+    marginLeft: 8,
+  }}>
+    {status}
+  </span>
+);
+
 const QualityController = () => {
   const dates = useSelector((state) => state.datePicker.dates);
-  // Provide sensible default date range (last 30 days) so tables populate even when no picker is set
-  const defaultEnd = new Date();
-  const defaultStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  // Default date range: December 20-29, 2025 (matching seeded data)
+  const defaultStart = new Date('2025-12-20T00:00:00.000Z');
+  const defaultEnd = new Date('2025-12-29T23:59:59.000Z');
   const startDate = dates?.[0] || defaultStart.toISOString();
   const endDate = dates?.[1] || defaultEnd.toISOString();
   const [summary, setSummary] = useState({
@@ -98,9 +156,11 @@ const QualityController = () => {
         let goodCount = 0, warningCount = 0, criticalCount = 0;
 
         if (rows.length) {
-          // compute average of selected nutrients as percentage of ideal values, capped at 100%
-          const nutrientKeys = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
-          const latest = rows[rows.length - 1];
+          // compute average of ALL nutrients as percentage of ideal values, capped at 100%
+          // Using same nutrients as Dashboard for consistency
+          const nutrientKeys = ['nitrogen', 'phosphorus', 'sulfur', 'zinc', 'iron', 'manganese', 'copper', 'potassium', 'calcium', 'magnesium'];
+          // Data is sorted descending by timestamp from API, so index 0 is newest (latest)
+          const latest = rows[0];
 
           console.log('QualityController - Latest row:', latest);
 
@@ -125,7 +185,7 @@ const QualityController = () => {
 
           console.log('QualityController - Nutrient Percentages:', nutrientPercentages, 'Avg:', avgNutrient);
 
-          // Count metrics by status (Good, Warning, Critical)
+          // Count metrics by status (Good, Warning, Critical) - using all nutrients
           nutrientKeys.forEach(key => {
             const value = latest[key];
             const ideal = idealsData[key];
@@ -223,19 +283,59 @@ const QualityController = () => {
 
       const wb = new ExcelJS.Workbook();
 
-      // Summary sheet
+      // Summary sheet with status for each metric
       const summarySheet = wb.addWorksheet('Summary');
-      summarySheet.addRow(['Metric', 'Value']);
-      summarySheet.addRow(['Average Nutrient (%)', summary.avgNutrient ?? '-']);
-      summarySheet.addRow(['Soil pH', summary.soilPH ?? '-']);
-      summarySheet.addRow(['Nitrogen (proxy)', summary.nitrogen ?? '-']);
-      summarySheet.addRow(['Water Usage', summary.waterUsage ?? '-']);
-      summarySheet.addRow(['Disease Incidence (%)', summary.diseaseIncidence ?? '-']);
+      
+      // Add headers with styling
+      const headerRow = summarySheet.addRow(['Metric', 'Value', 'Status']);
+      headerRow.font = { bold: true };
+      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      
+      // Get status for each metric
+      const avgNutrientStatus = getMetricStatus('avgNutrient', summary.avgNutrient);
+      const soilPHStatus = getMetricStatus('soilPH', summary.soilPH);
+      const nitrogenStatus = getMetricStatus('nitrogen', summary.nitrogen);
+      const waterUsageStatus = getMetricStatus('waterUsage', summary.waterUsage);
+      const diseaseStatus = getMetricStatus('diseaseIncidence', summary.diseaseIncidence);
+      
+      // Add rows with values and status
+      const addMetricRow = (sheet, metric, value, status) => {
+        const row = sheet.addRow([metric, value, status.status]);
+        // Color the status cell based on status
+        const statusCell = row.getCell(3);
+        if (status.status === 'Good') {
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
+          statusCell.font = { color: { argb: 'FF4CAF50' }, bold: true };
+        } else if (status.status === 'Warning') {
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } };
+          statusCell.font = { color: { argb: 'FFFF9800' }, bold: true };
+        } else if (status.status === 'Critical') {
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEBEE' } };
+          statusCell.font = { color: { argb: 'FFF44336' }, bold: true };
+        }
+        return row;
+      };
+      
+      addMetricRow(summarySheet, 'Average Nutrient (%)', summary.avgNutrient ?? '-', avgNutrientStatus);
+      addMetricRow(summarySheet, 'Soil pH', summary.soilPH ?? '-', soilPHStatus);
+      addMetricRow(summarySheet, 'Nitrogen (proxy)', summary.nitrogen ?? '-', nitrogenStatus);
+      addMetricRow(summarySheet, 'Water Usage', summary.waterUsage ?? '-', waterUsageStatus);
+      addMetricRow(summarySheet, 'Disease Incidence (%)', summary.diseaseIncidence ?? '-', diseaseStatus);
+      
       summarySheet.addRow([]);  // Empty row for spacing
-      summarySheet.addRow(['Status Overview', '']);
-      summarySheet.addRow(['Good', summary.goodCount ?? 0]);
-      summarySheet.addRow(['Warning', summary.warningCount ?? 0]);
-      summarySheet.addRow(['Critical', summary.criticalCount ?? 0]);
+      
+      // Status Summary counts
+      const statusHeaderRow = summarySheet.addRow(['Status Summary', '', '']);
+      statusHeaderRow.font = { bold: true };
+      summarySheet.addRow(['Good', summary.goodCount ?? 0, '']);
+      summarySheet.addRow(['Warning', summary.warningCount ?? 0, '']);
+      summarySheet.addRow(['Critical', summary.criticalCount ?? 0, '']);
+      
+      // Set column widths
+      summarySheet.getColumn(1).width = 25;
+      summarySheet.getColumn(2).width = 15;
+      summarySheet.getColumn(3).width = 12;
 
       // Plant/Crop report sheet
       const plantSheet = wb.addWorksheet('CropYieldHealthData');
@@ -296,7 +396,10 @@ const QualityController = () => {
           <Card>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Average Nutrient</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Average Nutrient</Typography>
+                  <StatusBadge {...getMetricStatus('avgNutrient', summary.avgNutrient)} />
+                </Box>
                 <Typography sx={{ fontSize: 32, fontWeight: 700, color: '#1b5e20' }}>{summary.avgNutrient !== null ? `${summary.avgNutrient}%` : '-'}</Typography>
                 <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>All nutrients combined</Typography>
               </div>
@@ -333,27 +436,39 @@ const QualityController = () => {
           </Card>
         </Box>
 
-        {/* Other Summary cards */}
+        {/* Other Summary cards with Status Badges */}
         <CardsGrid>
           <Card>
-            <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Soil pH</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Soil pH</Typography>
+              <StatusBadge {...getMetricStatus('soilPH', summary.soilPH)} />
+            </Box>
             <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.soilPH !== null ? summary.soilPH.toFixed(1) : '-'}</Typography>
-            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Acidity/alkalinity</Typography>
+            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Ideal: 6.0 - 7.5</Typography>
           </Card>
           <Card>
-            <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Nitrogen (proxy)</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Nitrogen (proxy)</Typography>
+              <StatusBadge {...getMetricStatus('nitrogen', summary.nitrogen)} />
+            </Box>
             <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.nitrogen !== null ? `${summary.nitrogen} ppm` : '-'}</Typography>
-            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Using phosphorus as proxy</Typography>
+            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Ideal: ~70 ppm</Typography>
           </Card>
           <Card>
-            <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Water Usage</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Water Usage</Typography>
+              <StatusBadge {...getMetricStatus('waterUsage', summary.waterUsage)} />
+            </Box>
             <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.waterUsage !== null ? `${summary.waterUsage} gal/acre` : '-'}</Typography>
-            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Estimated from yield</Typography>
+            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Lower is better</Typography>
           </Card>
           <Card>
-            <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Disease Incidence</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: 12, color: '#2e7d32' }}>Disease Incidence</Typography>
+              <StatusBadge {...getMetricStatus('diseaseIncidence', summary.diseaseIncidence)} />
+            </Box>
             <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1b5e20' }}>{summary.diseaseIncidence !== null ? `${summary.diseaseIncidence}%` : '-'}</Typography>
-            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Based on health status</Typography>
+            <Typography sx={{ fontSize: 12, color: '#66bb6a' }}>Ideal: &lt;5%</Typography>
           </Card>
         </CardsGrid>
 

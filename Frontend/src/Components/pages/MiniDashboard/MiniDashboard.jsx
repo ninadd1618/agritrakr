@@ -78,16 +78,33 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
     fetchData();
   }, []);
 
-  // Calculate averages from recent readings
+  // Get the latest (most recent) value for a field - matching Main Dashboard behavior
+  const getLatestValue = (field) => {
+    if (!soilData.length) return 0;
+    // Sort by timestamp descending and get the latest value
+    const sortedData = [...soilData].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    for (let i = 0; i < sortedData.length; i++) {
+      const v = sortedData[i][field];
+      if (v !== null && v !== undefined && Number.isFinite(Number(v))) {
+        return Number(v);
+      }
+    }
+    return 0;
+  };
+
+  // Calculate averages from recent readings (for nutrient bar chart)
   const getAverage = (field) => {
     if (!soilData.length) return 0;
     const values = soilData.map(d => d[field] || 0);
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
   };
 
-  const avgMoisture = getAverage('moisture');
-  const avgPh = getAverage('pH');
-  const avgTemp = getAverage('temperature');
+  // Use latest values for environmental metrics (matching Dashboard)
+  const latestMoisture = getLatestValue('moisture');
+  const latestPh = getLatestValue('pH');
+  const latestTemp = getLatestValue('temperature');
+  
+  // Use averages for nutrient bar chart display
   const avgPhosphorus = getAverage('phosphorus');
   const avgPotassium = getAverage('potassium');
   const avgNitrogen = getAverage('nitrogen');
@@ -163,11 +180,11 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
             }}>
               <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>Soil Moisture</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: '#2196f3' }}>
-                {avgMoisture}%
+                {latestMoisture.toFixed(1)}%
               </div>
               <div style={{
                 fontSize: 11,
-                color: getStatusColor(avgMoisture, safeIdeals.moisture),
+                color: getStatusColor(latestMoisture, safeIdeals.moisture),
                 marginTop: 4
               }}>
                 Target: {safeIdeals.moisture}%
@@ -182,11 +199,11 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
             }}>
               <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>pH Level</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: '#9c27b0' }}>
-                {avgPh}
+                {latestPh.toFixed(1)}
               </div>
               <div style={{
                 fontSize: 11,
-                color: getStatusColor(avgPh, safeIdeals.pH),
+                color: getStatusColor(latestPh, safeIdeals.pH),
                 marginTop: 4
               }}>
                 Target: {safeIdeals.pH}
@@ -201,11 +218,11 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
             }}>
               <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>Temperature</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: '#ff6b6b' }}>
-                {avgTemp}°C
+                {latestTemp.toFixed(1)}°C
               </div>
               <div style={{
                 fontSize: 11,
-                color: getStatusColor(avgTemp, safeIdeals.temperature),
+                color: getStatusColor(latestTemp, safeIdeals.temperature),
                 marginTop: 4
               }}>
                 Target: {safeIdeals.temperature}°C
