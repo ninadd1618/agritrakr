@@ -4,6 +4,7 @@ import Navbar from "../../Navbar/Navbar";
 import styled from "styled-components";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
@@ -30,6 +31,9 @@ const GridContainer = styled.div`
 `;
 
 function MiniDashboard({ isOpen, toggle, isVisi = true }) {
+  // Get dates from Redux store for filtering
+  const dates = useSelector((state) => state.datePicker.dates);
+  
   const [soilData, setSoilData] = useState([]);
   const [ideals, setIdeals] = useState({});
   const [loading, setLoading] = useState(true);
@@ -38,8 +42,14 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Build URL with date range parameters
+        const params = new URLSearchParams();
+        if (dates && dates[0]) params.append('start', dates[0]);
+        if (dates && dates[1]) params.append('end', dates[1]);
+        params.append('limit', '500');
+        
         const [dataRes, idealsRes] = await Promise.all([
-          axios.get('/api/v1/soil/data', {
+          axios.get(`/api/v1/soil/data?${params.toString()}`, {
             withCredentials: true,
           }),
           axios.get('/api/v1/soil/ideals', {
@@ -76,7 +86,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
       }
     };
     fetchData();
-  }, []);
+  }, [dates]); // Re-fetch when dates change
 
   // Get the latest (most recent) value for a field - matching Main Dashboard behavior
   const getLatestValue = (field) => {

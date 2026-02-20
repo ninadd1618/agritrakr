@@ -3,11 +3,11 @@ import { env } from '../config/env.js';
 import { SoilData } from '../models/SoilData.model.js';
 import { FinalData } from '../models/FinalData.model.js';
 
-// Generate realistic fake soil data for December 2025 (10 days)
-const generateFakeSoilData = (deviceId, count = 10) => {
+// Generate realistic fake soil data from Jan 1, 2026 to Feb 20, 2026 (51 days)
+const generateFakeSoilData = (deviceId, count = 51) => {
   const data = [];
-  // Start from December 20, 2025 and generate hourly data for 10 days
-  const startDate = new Date('2025-12-20T00:00:00.000Z');
+  // Start from January 1, 2026
+  const startDate = new Date('2026-01-01T00:00:00.000Z');
   
   for (let i = 0; i < count; i++) {
     // Generate timestamp for each entry (every 24 hours for daily data)
@@ -37,11 +37,11 @@ const generateFakeSoilData = (deviceId, count = 10) => {
   return data;
 };
 
-// Generate fake OEE/PLC data for December 2025 (10 days)
-const generateFakeFinalData = (deviceId, count = 10) => {
+// Generate fake OEE/PLC data from Jan 1, 2026 to Feb 20, 2026 (51 days)
+const generateFakeFinalData = (deviceId, count = 51) => {
   const data = [];
-  // Start from December 20, 2025
-  const startDate = new Date('2025-12-20T00:00:00.000Z');
+  // Start from January 1, 2026
+  const startDate = new Date('2026-01-01T00:00:00.000Z');
   
   for (let i = 0; i < count; i++) {
     // Generate timestamp for each day
@@ -88,20 +88,20 @@ const seedAllData = async () => {
     ];
 
     // Generate and insert soil data
-    console.log('\n📊 Seeding soil nutrients data (Dec 20-29, 2025)...');
+    console.log('\n📊 Seeding soil nutrients data (Jan 1 - Feb 20, 2026)...');
     let totalSoilRecords = 0;
     for (const deviceId of soilDeviceIds) {
-      const fakeData = generateFakeSoilData(deviceId, 10); // 10 days of data (Dec 20-29, 2025)
+      const fakeData = generateFakeSoilData(deviceId, 51); // 51 days of data (Jan 1 - Feb 20, 2026)
       await SoilData.insertMany(fakeData);
       totalSoilRecords += fakeData.length;
       console.log(`  ✅ Inserted ${fakeData.length} records for ${deviceId}`);
     }
 
     // Generate and insert OEE data
-    console.log('\n⚙️ Seeding OEE/PLC data (Dec 20-29, 2025)...');
+    console.log('\n⚙️ Seeding OEE/PLC data (Jan 1 - Feb 20, 2026)...');
     let totalOeeRecords = 0;
     for (const deviceId of oeeDeviceIds) {
-      const fakeData = generateFakeFinalData(deviceId, 10); // 10 days of data (Dec 20-29, 2025)
+      const fakeData = generateFakeFinalData(deviceId, 51); // 51 days of data (Jan 1 - Feb 20, 2026)
       await FinalData.insertMany(fakeData);
       totalOeeRecords += fakeData.length;
       console.log(`  ✅ Inserted ${fakeData.length} records for ${deviceId}`);

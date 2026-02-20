@@ -2,14 +2,14 @@ import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 import { SoilData } from '../models/SoilData.model.js';
 
-// Generate realistic fake soil data for December 2025 (10 days)
-const generateFakeSoilData = (deviceId, count = 10) => {
+// Generate realistic fake soil data from Jan 1, 2026 to Feb 20, 2026 (51 days)
+const generateFakeSoilData = (deviceId, count = 51) => {
   const data = [];
-  // Start from December 20, 2025 and go forward 10 days
-  const startDate = new Date('2025-12-20T08:00:00.000Z');
+  // Start from January 1, 2026
+  const startDate = new Date('2026-01-01T08:00:00.000Z');
   
   for (let i = 0; i < count; i++) {
-    // Generate timestamp for each day going forward from Dec 20, 2025
+    // Generate timestamp for each day going forward from Jan 1, 2026
     const timestamp = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
     
     data.push({
@@ -58,7 +58,7 @@ const seedSoilData = async () => {
 
     // Generate and insert data for each device
     for (const deviceId of deviceIds) {
-      const fakeData = generateFakeSoilData(deviceId, 10); // 10 records per device (Dec 20-29, 2025)
+      const fakeData = generateFakeSoilData(deviceId, 51); // 51 records per device (Jan 1 - Feb 20, 2026)
       await SoilData.insertMany(fakeData);
       console.log(`Inserted ${fakeData.length} records for device: ${deviceId}`);
     }

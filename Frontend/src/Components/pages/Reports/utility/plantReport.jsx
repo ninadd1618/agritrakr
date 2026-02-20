@@ -28,12 +28,12 @@ const PlantReport = ({ dates }) => {
   // const userData = useSelector((state) => state.auth.userData); // not used in compact table
   const [reportData, setReportData] = useState(null);
 
-  // Default date range: December 20-29, 2025 (matching seeded data)
+  // Default date range: January 1 - February 20, 2026 (matching seeded data)
   // Use useMemo so these defaults are computed once and do not change
   // on re-renders (which was causing page to reset to 1).
   const { startDefault, stopDefault } = useMemo(() => {
-    const defaultStart = new Date('2025-12-20T00:00:00.000Z');
-    const defaultEnd = new Date('2025-12-29T23:59:59.000Z');
+    const defaultStart = new Date('2026-01-01T00:00:00.000Z');
+    const defaultEnd = new Date('2026-02-20T23:59:59.000Z');
     return {
       startDefault: defaultStart.toISOString(),
       stopDefault: defaultEnd.toISOString(),

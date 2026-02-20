@@ -4,6 +4,9 @@ import Navbar from "../../Navbar/Navbar";
 import styled from "styled-components";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
@@ -33,6 +36,231 @@ function formatDate(d) {
     const dt = new Date(d);
     return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+// Download Excel report with status overview for each environmental condition
+const downloadExcelReport = async (data, ideals, summaryData) => {
+    if (!data || data.length === 0) return;
+    
+    const workbook = new ExcelJS.Workbook();
+    
+    // Helper function to calculate status
+    const getStatus = (value, ideal) => {
+        if (value == null || ideal == null || ideal === 0) return 'N/A';
+        const deviation = Math.abs(value - ideal);
+        if (deviation < ideal * 0.1) return 'Good';
+        if (deviation < ideal * 0.2) return 'Warning';
+        return 'Critical';
+    };
+    
+    // Helper function to get indicator symbol
+    const getIndicator = (value, ideal) => {
+        if (value == null || ideal == null || ideal === 0) return '⚫';
+        const deviation = Math.abs(value - ideal);
+        if (deviation < ideal * 0.1) return '🟢';
+        if (deviation < ideal * 0.2) return '🟡';
+        return '🔴';
+    };
+    
+    // Helper function to calculate deviation percentage
+    const getDeviation = (value, ideal) => {
+        if (value == null || ideal == null || ideal === 0) return 'N/A';
+        const deviation = ((value - ideal) / ideal) * 100;
+        return `${deviation >= 0 ? '+' : ''}${deviation.toFixed(1)}%`;
+    };
+    
+    // Helper to apply status color
+    const applyStatusColor = (cell) => {
+        const cellText = cell.value?.toString() || '';
+        if (cellText === 'Good' || cellText.includes('🟢')) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } };
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        } else if (cellText === 'Warning' || cellText.includes('🟡')) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC107' } };
+            cell.font = { bold: true };
+        } else if (cellText === 'Critical' || cellText.includes('🔴')) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF44336' } };
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        }
+    };
+    
+    // Sort data by timestamp (newest first)
+    const sortedData = [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    // Sheet 1: Summary Overview
+    const summarySheet = workbook.addWorksheet('Summary Overview');
+    summarySheet.addRow(['Dashboard Summary Report']);
+    summarySheet.addRow(['Generated:', new Date().toLocaleString()]);
+    summarySheet.addRow(['Date Range:', `${sortedData.length > 0 ? new Date(sortedData[sortedData.length-1].timestamp).toLocaleDateString('en-GB') : ''} to ${sortedData.length > 0 ? new Date(sortedData[0].timestamp).toLocaleDateString('en-GB') : ''}`]);
+    summarySheet.addRow([]);
+    summarySheet.addRow(['Key Metrics', 'Value', 'Status']);
+    summarySheet.addRow(['Soil Health Score', `${summaryData.overallHealth || 0}%`, summaryData.overallHealth >= 80 ? 'Good' : summaryData.overallHealth >= 60 ? 'Warning' : 'Critical']);
+    summarySheet.addRow(['Average Nutrient Level', `${summaryData.avgNutrient || 0}%`, parseFloat(summaryData.avgNutrient) >= 80 ? 'Good' : parseFloat(summaryData.avgNutrient) >= 60 ? 'Warning' : 'Critical']);
+    summarySheet.addRow(['Soil Moisture', `${summaryData.moisture?.toFixed(1) || 0}%`, getStatus(summaryData.moisture, ideals.moisture)]);
+    summarySheet.addRow(['Soil pH Level', summaryData.pH?.toFixed(1) || 0, getStatus(summaryData.pH, ideals.pH)]);
+    summarySheet.addRow(['Soil Temperature', `${summaryData.temp?.toFixed(1) || 0}°C`, getStatus(summaryData.temp, ideals.temperature)]);
+    summarySheet.addRow([]);
+    summarySheet.addRow(['Status Overview', 'Count']);
+    summarySheet.addRow(['Good', summaryData.goodCount || 0]);
+    summarySheet.addRow(['Warning', summaryData.warningCount || 0]);
+    summarySheet.addRow(['Critical', summaryData.criticalCount || 0]);
+    summarySheet.addRow(['Total Metrics', (summaryData.goodCount || 0) + (summaryData.warningCount || 0) + (summaryData.criticalCount || 0)]);
+    
+    // Style the summary sheet
+    summarySheet.getRow(1).font = { bold: true, size: 16 };
+    summarySheet.getRow(5).font = { bold: true };
+    summarySheet.getRow(12).font = { bold: true };
+    
+    // Apply status colors to summary
+    [6, 7, 8, 9, 10].forEach(rowNum => {
+        applyStatusColor(summarySheet.getRow(rowNum).getCell(3));
+    });
+    
+    // Sheet 2: Environmental Conditions with Status and Indicator
+    const envSheet = workbook.addWorksheet('Environmental Conditions');
+    envSheet.addRow(['Date', 
+        'Moisture (%)', 'Moisture Ideal', 'Moisture Indicator', 'Moisture Status', 'Moisture Deviation', 
+        'pH', 'pH Ideal', 'pH Indicator', 'pH Status', 'pH Deviation',
+        'Temperature (°C)', 'Temp Ideal', 'Temp Indicator', 'Temp Status', 'Temp Deviation']);
+    envSheet.getRow(1).font = { bold: true };
+    envSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1976D2' } };
+    envSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    const moistureIdeal = ideals.moisture || 50;
+    const pHIdeal = ideals.pH || 6.5;
+    const tempIdeal = ideals.temperature || 20;
+    
+    sortedData.forEach(d => {
+        envSheet.addRow([
+            new Date(d.timestamp).toLocaleDateString('en-GB'),
+            d.moisture?.toFixed(1) || '',
+            moistureIdeal,
+            getIndicator(d.moisture, moistureIdeal),
+            getStatus(d.moisture, moistureIdeal),
+            getDeviation(d.moisture, moistureIdeal),
+            d.pH?.toFixed(2) || '',
+            pHIdeal,
+            getIndicator(d.pH, pHIdeal),
+            getStatus(d.pH, pHIdeal),
+            getDeviation(d.pH, pHIdeal),
+            d.temperature?.toFixed(1) || '',
+            tempIdeal,
+            getIndicator(d.temperature, tempIdeal),
+            getStatus(d.temperature, tempIdeal),
+            getDeviation(d.temperature, tempIdeal)
+        ]);
+    });
+    
+    // Apply conditional formatting colors for environmental status columns
+    envSheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            [5, 10, 15].forEach(colIndex => { // Status columns (shifted due to indicator columns)
+                applyStatusColor(row.getCell(colIndex));
+            });
+        }
+    });
+    
+    // Sheet 3: All Nutrients with Status, Indicator and Deviation
+    const nutrientSheet = workbook.addWorksheet('Nutrients Performance');
+    nutrientSheet.addRow(['Date', 
+        'Nitrogen', 'N Ideal', 'N Indicator', 'N Status', 'N Deviation',
+        'Phosphorus', 'P Ideal', 'P Indicator', 'P Status', 'P Deviation',
+        'Potassium', 'K Ideal', 'K Indicator', 'K Status', 'K Deviation',
+        'Sulfur', 'S Ideal', 'S Indicator', 'S Status', 'S Deviation',
+        'Calcium', 'Ca Ideal', 'Ca Indicator', 'Ca Status', 'Ca Deviation',
+        'Magnesium', 'Mg Ideal', 'Mg Indicator', 'Mg Status', 'Mg Deviation',
+        'Iron', 'Fe Ideal', 'Fe Indicator', 'Fe Status', 'Fe Deviation',
+        'Zinc', 'Zn Ideal', 'Zn Indicator', 'Zn Status', 'Zn Deviation',
+        'Manganese', 'Mn Ideal', 'Mn Indicator', 'Mn Status', 'Mn Deviation',
+        'Copper', 'Cu Ideal', 'Cu Indicator', 'Cu Status', 'Cu Deviation'
+    ]);
+    nutrientSheet.getRow(1).font = { bold: true };
+    nutrientSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1976D2' } };
+    nutrientSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    sortedData.forEach(d => {
+        nutrientSheet.addRow([
+            new Date(d.timestamp).toLocaleDateString('en-GB'),
+            d.nitrogen || '', ideals.nitrogen || '', getIndicator(d.nitrogen, ideals.nitrogen), getStatus(d.nitrogen, ideals.nitrogen), getDeviation(d.nitrogen, ideals.nitrogen),
+            d.phosphorus || '', ideals.phosphorus || '', getIndicator(d.phosphorus, ideals.phosphorus), getStatus(d.phosphorus, ideals.phosphorus), getDeviation(d.phosphorus, ideals.phosphorus),
+            d.potassium || '', ideals.potassium || '', getIndicator(d.potassium, ideals.potassium), getStatus(d.potassium, ideals.potassium), getDeviation(d.potassium, ideals.potassium),
+            d.sulfur || '', ideals.sulfur || '', getIndicator(d.sulfur, ideals.sulfur), getStatus(d.sulfur, ideals.sulfur), getDeviation(d.sulfur, ideals.sulfur),
+            d.calcium || '', ideals.calcium || '', getIndicator(d.calcium, ideals.calcium), getStatus(d.calcium, ideals.calcium), getDeviation(d.calcium, ideals.calcium),
+            d.magnesium || '', ideals.magnesium || '', getIndicator(d.magnesium, ideals.magnesium), getStatus(d.magnesium, ideals.magnesium), getDeviation(d.magnesium, ideals.magnesium),
+            d.iron || '', ideals.iron || '', getIndicator(d.iron, ideals.iron), getStatus(d.iron, ideals.iron), getDeviation(d.iron, ideals.iron),
+            d.zinc || '', ideals.zinc || '', getIndicator(d.zinc, ideals.zinc), getStatus(d.zinc, ideals.zinc), getDeviation(d.zinc, ideals.zinc),
+            d.manganese || '', ideals.manganese || '', getIndicator(d.manganese, ideals.manganese), getStatus(d.manganese, ideals.manganese), getDeviation(d.manganese, ideals.manganese),
+            d.copper || '', ideals.copper || '', getIndicator(d.copper, ideals.copper), getStatus(d.copper, ideals.copper), getDeviation(d.copper, ideals.copper)
+        ]);
+    });
+    
+    // Apply conditional formatting for nutrient status columns (every 5th column starting from 5)
+    nutrientSheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            [5, 10, 15, 20, 25, 30, 35, 40, 45, 50].forEach(colIndex => { // Status columns
+                applyStatusColor(row.getCell(colIndex));
+            });
+        }
+    });
+    
+    // Sheet 4: Status Summary per Date with Indicator
+    const statusSummarySheet = workbook.addWorksheet('Daily Status Summary');
+    statusSummarySheet.addRow(['Date', 'Good Count', 'Warning Count', 'Critical Count', 'Indicator', 'Overall Status']);
+    statusSummarySheet.getRow(1).font = { bold: true };
+    statusSummarySheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1976D2' } };
+    statusSummarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    sortedData.forEach(d => {
+        let good = 0, warning = 0, critical = 0;
+        
+        // Count environmental conditions
+        ['moisture', 'pH', 'temperature'].forEach(key => {
+            const ideal = key === 'moisture' ? moistureIdeal : key === 'pH' ? pHIdeal : tempIdeal;
+            const status = getStatus(d[key], ideal);
+            if (status === 'Good') good++;
+            else if (status === 'Warning') warning++;
+            else if (status === 'Critical') critical++;
+        });
+        
+        // Count nutrients
+        ['nitrogen', 'phosphorus', 'potassium', 'sulfur', 'calcium', 'magnesium', 'iron', 'zinc', 'manganese', 'copper'].forEach(key => {
+            const status = getStatus(d[key], ideals[key]);
+            if (status === 'Good') good++;
+            else if (status === 'Warning') warning++;
+            else if (status === 'Critical') critical++;
+        });
+        
+        const overallStatus = critical > 0 ? 'Critical' : warning > 0 ? 'Warning' : 'Good';
+        const overallIndicator = critical > 0 ? '🔴' : warning > 0 ? '🟡' : '🟢';
+        
+        statusSummarySheet.addRow([
+            new Date(d.timestamp).toLocaleDateString('en-GB'),
+            good,
+            warning,
+            critical,
+            overallIndicator,
+            overallStatus
+        ]);
+    });
+    
+    // Apply status colors to daily summary
+    statusSummarySheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            applyStatusColor(row.getCell(6)); // Overall Status column (shifted due to indicator)
+        }
+    });
+    
+    // Auto-fit columns for all sheets
+    [summarySheet, envSheet, nutrientSheet, statusSummarySheet].forEach(sheet => {
+        sheet.columns.forEach(column => {
+            column.width = 14;
+        });
+    });
+    
+    // Download the file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'soil-dashboard-report.xlsx');
+};
 
 const downloadCSV = (rows, filename = 'soil-data.csv') => {
     if (!rows || rows.length === 0) return;
@@ -129,6 +357,9 @@ const MetricChart = ({ data, metricKey, metricLabel, idealValue, unit = '%' }) =
 };
 
 const Dashboard = ({ isOpen, toggle }) => {
+    // Get dates from Redux store for filtering
+    const dates = useSelector((state) => state.datePicker.dates);
+    
     const [data, setData] = useState([]);
     const [ideals, setIdeals] = useState({});
     const [loading, setLoading] = useState(true);
@@ -147,7 +378,13 @@ const Dashboard = ({ isOpen, toggle }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('/api/v1/soil/data', {
+                // Build URL with date range parameters
+                const params = new URLSearchParams();
+                if (dates && dates[0]) params.append('start', dates[0]);
+                if (dates && dates[1]) params.append('end', dates[1]);
+                params.append('limit', '500');
+                
+                const res = await axios.get(`/api/v1/soil/data?${params.toString()}`, {
                     withCredentials: true,
                 });
                 const d = res.data?.data || [];
@@ -260,7 +497,7 @@ const Dashboard = ({ isOpen, toggle }) => {
 
                     setSummaryData({
                         overallHealth: overallHealth,
-                        avgNutrient: avgNutrient != null ? Math.round(avgNutrient) : null,
+                        avgNutrient: avgNutrient != null ? (Math.round(avgNutrient * 10) / 10).toFixed(1) : null,
                         lastUpdate: chartData[chartData.length - 1]?.timestamp || null,
                         moisture: moistureVal,
                         pH: pHVal,
@@ -278,7 +515,7 @@ const Dashboard = ({ isOpen, toggle }) => {
         };
 
         fetchData();
-    }, []);
+    }, [dates]); // Re-fetch when dates change
 
     const environmentalMetrics = [
         { key: 'moisture', label: 'Soil Moisture', unit: '%' },
@@ -414,7 +651,23 @@ const Dashboard = ({ isOpen, toggle }) => {
 
                 {/* Environmental Conditions */}
                 <div style={{ marginBottom: 24 }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Environmental Conditions</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Environmental Conditions</h2>
+                        <button
+                            onClick={() => downloadExcelReport(data, ideals, summaryData)}
+                            style={{
+                                padding: '8px 16px',
+                                background: '#1976d2',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                fontSize: 13
+                            }}
+                        >
+                            Download CSV Report
+                        </button>
+                    </div>
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -435,38 +688,7 @@ const Dashboard = ({ isOpen, toggle }) => {
 
                 {/* Nutrient Performance Grid */}
                 <div style={{ marginBottom: 24 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                        <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Nutrient Performance Analysis</h2>
-                        <button
-                            onClick={() => downloadCSV(data.map(d => ({
-                                timestamp: new Date(d.timestamp).toISOString(),
-                                moisture: d.moisture,
-                                pH: d.pH,
-                                temperature: d.temperature,
-                                nitrogen: d.nitrogen,
-                                phosphorus: d.phosphorus,
-                                sulfur: d.sulfur,
-                                zinc: d.zinc,
-                                iron: d.iron,
-                                manganese: d.manganese,
-                                copper: d.copper,
-                                potassium: d.potassium,
-                                calcium: d.calcium,
-                                magnesium: d.magnesium
-                            })), 'soil-readings.csv')}
-                            style={{
-                                padding: '8px 16px',
-                                background: '#1976d2',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 6,
-                                cursor: 'pointer',
-                                fontSize: 13
-                            }}
-                        >
-                            Download CSV Report
-                        </button>
-                    </div>
+                    <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Nutrient Performance Analysis</h2>
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',

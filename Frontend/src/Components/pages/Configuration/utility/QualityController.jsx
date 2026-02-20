@@ -123,9 +123,9 @@ const StatusBadge = ({ status, color, bgColor }) => (
 
 const QualityController = () => {
   const dates = useSelector((state) => state.datePicker.dates);
-  // Default date range: December 20-29, 2025 (matching seeded data)
-  const defaultStart = new Date('2025-12-20T00:00:00.000Z');
-  const defaultEnd = new Date('2025-12-29T23:59:59.000Z');
+  // Default date range: January 1 - February 20, 2026 (matching seeded data)
+  const defaultStart = new Date('2026-01-01T00:00:00.000Z');
+  const defaultEnd = new Date('2026-02-20T23:59:59.000Z');
   const startDate = dates?.[0] || defaultStart.toISOString();
   const endDate = dates?.[1] || defaultEnd.toISOString();
   const [summary, setSummary] = useState({
@@ -141,8 +141,9 @@ const QualityController = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        console.log('QualityController - Fetching with dates:', startDate, 'to', endDate);
         // Fetch soil data
-        const soilUrl = `/api/v1/soil/data?limit=200&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
+        const soilUrl = `/api/v1/soil/data?limit=500&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
         const soilRes = await axios.get(soilUrl);
         const rows = soilRes.data?.data || [];
 

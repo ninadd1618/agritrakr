@@ -60,6 +60,7 @@ export default function SoilTableView({ dates }) {
         if (dates && dates[1]) params.end = dates[1];
         params.type = type;
         params.mode = mode;
+        params.limit = 500; // Increase limit to get all data in date range
         const res = await axios.get("/api/v1/soil/table", { params });
         const data = res?.data?.data || {};
         setColumns(data.columns || []);
@@ -76,7 +77,7 @@ export default function SoilTableView({ dates }) {
         const soilParams = {};
         if (dates && dates[0]) soilParams.start = dates[0];
         if (dates && dates[1]) soilParams.end = dates[1];
-        soilParams.limit = 100;
+        soilParams.limit = 500; // Increase limit to get all data in date range
         // Note: NOT passing type parameter here - we need ALL nutrients for status calculation
         const soilRes = await axios.get("/api/v1/soil/data", { params: soilParams });
         const soilData = soilRes.data?.data || [];
@@ -100,7 +101,7 @@ export default function SoilTableView({ dates }) {
 
           // Define macro and micro nutrients
           const macroNutrients = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
-          const microNutrients = ['iron', 'manganese', 'zinc', 'copper'];
+          const microNutrients = ['nitrogen', 'iron', 'manganese', 'zinc', 'copper'];
 
           // Use ALL 10 nutrients for Average Nutrient calculation to match QualityController/Reports
           // This ensures consistency across Table View and Reports sections

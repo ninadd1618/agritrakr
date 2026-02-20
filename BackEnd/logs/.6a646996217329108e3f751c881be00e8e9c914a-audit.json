@@ -1,0 +1,35 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\.6a646996217329108e3f751c881be00e8e9c914a-audit.json",
+    "files": [
+        {
+            "date": 1771224122654,
+            "name": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\error-2026-02-16.log",
+            "hash": "59689b53e08be54c327d7bfe7b889e3404b0a51159aa5d2ad011e6e6c3de24a5"
+        },
+        {
+            "date": 1771343323385,
+            "name": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\error-2026-02-17.log",
+            "hash": "4e9dec1629f82835b484a0732e859dbabceebcd96c00c8296e597f5fca1b1bc9"
+        },
+        {
+            "date": 1771427532623,
+            "name": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\error-2026-02-18.log",
+            "hash": "be2966b8cdc529cc65ca30e398ee24b7e936f6f8566dbf9a7d31564cf19b9e58"
+        },
+        {
+            "date": 1771486303975,
+            "name": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\error-2026-02-19.log",
+            "hash": "6a59b0ed801aa83604ff5f0f98274957a08e0b7a958a187c866dc8e7ed1892f1"
+        },
+        {
+            "date": 1771592676080,
+            "name": "D:\\Projects\\Flowmen-common\\BackEnd\\logs\\error-2026-02-20.log",
+            "hash": "3c9c2503ef484db413998be4e69db94276b6f8e13a50c88ac87e1dbe3b3e77b7"
+        }
+    ],
+    "hashType": "sha256"
+}

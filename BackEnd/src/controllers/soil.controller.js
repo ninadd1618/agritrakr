@@ -41,17 +41,18 @@ const getSoilData = asyncHandler(async (req, res) => {
 
 const getIdealSoilData = asyncHandler(async (req, res) => {
   // Return ideal soil values matching the constants used in calculations
+  // Aligned with typical agricultural soil testing standards
   const idealData = {
     moisture: 50,        // percent
     pH: 6.5,             // optimal pH
     temperature: 20,     // degrees Celsius
     nitrogen: 150,       // ideal level in ppm
     phosphorus: 70,      // ideal level in ppm
-    sulfur: 20,          // ideal level in ppm
-    zinc: 8,             // ideal level in ppm
-    iron: 12,            // ideal level in ppm
-    manganese: 8,        // ideal level in ppm
-    copper: 3,           // ideal level in ppm
+    sulfur: 25,          // ideal level in ppm
+    zinc: 4,             // ideal level in ppm (typical range 1-6)
+    iron: 35,            // ideal level in ppm (typical range 10-60)
+    manganese: 15,       // ideal level in ppm (typical range 5-25)
+    copper: 6,           // ideal level in ppm (typical range 2-12)
     potassium: 210,      // ideal level in ppm
     calcium: 1800,       // ideal level in ppm
     magnesium: 280,      // ideal level in ppm

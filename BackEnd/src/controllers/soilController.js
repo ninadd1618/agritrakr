@@ -64,7 +64,7 @@ const getTableView = asyncHandler(async (req, res) => {
     const docs = await SoilData.find(filter).sort({ timestamp: 1 }).limit(parseInt(limit, 10));
 
     const macroKeys = ['phosphorus', 'potassium', 'calcium', 'magnesium', 'sulfur'];
-    const microKeys = ['iron', 'manganese', 'zinc', 'copper', 'sodium'];
+    const microKeys = ['nitrogen', 'iron', 'manganese', 'zinc', 'copper'];
     const keys = type === 'micro' ? microKeys : macroKeys;
 
     const ideals = IDEAL_SOIL_VALUES || {};

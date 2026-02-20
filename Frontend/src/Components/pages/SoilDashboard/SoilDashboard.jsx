@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 function formatDate(d) {
     const dt = new Date(d);
@@ -76,6 +77,9 @@ const MetricChart = ({ data, metricKey, metricLabel, idealValue }) => {
 };
 
 export default function SoilDashboard() {
+    // Get dates from Redux store for filtering
+    const dates = useSelector((state) => state.datePicker.dates);
+    
     const [data, setData] = useState([]);
     const [ideals, setIdeals] = useState({});
     const [loading, setLoading] = useState(true);
@@ -88,10 +92,17 @@ export default function SoilDashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('/api/v1/soil/data', {
+                // Build URL with date range parameters
+                const params = new URLSearchParams();
+                if (dates && dates[0]) params.append('start', dates[0]);
+                if (dates && dates[1]) params.append('end', dates[1]);
+                params.append('limit', '500');
+                
+                const res = await axios.get(`/api/v1/soil/data?${params.toString()}`, {
                     withCredentials: true,
                 });
                 const d = res.data?.data || [];
+                
                 const toNum = v => { const n = Number(v); return Number.isFinite(n) ? n : null; };
                 const chartData = d.map(item => ({
                     timestamp: item.timestamp,
@@ -178,7 +189,7 @@ export default function SoilDashboard() {
             }
         };
         fetchData();
-    }, []);
+    }, [dates]); // Re-fetch when dates change
 
     const metrics = [
         { key: 'phosphorus', label: 'Phosphorus Levels' },

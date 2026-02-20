@@ -18,11 +18,11 @@ const connectDB = async () => {
 // Generate random data within realistic ranges
 const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-// Generate timestamps for December 20-29, 2025 (10 days)
+// Generate timestamps for January 1 - February 20, 2026 (51 days)
 const generateTimestamps = (count) => {
     const timestamps = [];
-    const startDate = new Date('2025-12-20T00:00:00.000Z');
-    const endDate = new Date('2025-12-29T23:59:59.000Z');
+    const startDate = new Date('2026-01-01T00:00:00.000Z');
+    const endDate = new Date('2026-02-20T23:59:59.000Z');
 
     for (let i = 0; i < count; i++) {
         const randomTime = new Date(
