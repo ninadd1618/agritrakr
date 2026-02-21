@@ -16,6 +16,7 @@ const ingestReading = asyncHandler(async (req, res) => {
         moisture: payload.moisture,
         pH: payload.pH,
         temp: payload.temp,
+        nitrogen: payload.nitrogen,
         phosphorus: payload.phosphorus,
         sulfur: payload.sulfur,
         zinc: payload.zinc,

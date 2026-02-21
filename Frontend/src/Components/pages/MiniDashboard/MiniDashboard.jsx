@@ -33,7 +33,7 @@ const GridContainer = styled.div`
 function MiniDashboard({ isOpen, toggle, isVisi = true }) {
   // Get dates from Redux store for filtering
   const dates = useSelector((state) => state.datePicker.dates);
-  
+
   const [soilData, setSoilData] = useState([]);
   const [ideals, setIdeals] = useState({});
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
         if (dates && dates[0]) params.append('start', dates[0]);
         if (dates && dates[1]) params.append('end', dates[1]);
         params.append('limit', '500');
-        
+
         const [dataRes, idealsRes] = await Promise.all([
           axios.get(`/api/v1/soil/data?${params.toString()}`, {
             withCredentials: true,
@@ -113,7 +113,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
   const latestMoisture = getLatestValue('moisture');
   const latestPh = getLatestValue('pH');
   const latestTemp = getLatestValue('temperature');
-  
+
   // Use averages for nutrient bar chart display
   const avgPhosphorus = getAverage('phosphorus');
   const avgPotassium = getAverage('potassium');
@@ -307,7 +307,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
                 <div style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>Nitrogen (N)</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#4caf50' }}>{avgNitrogen}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#4caf50' }}>{getPercentage(avgNitrogen, safeIdeals.nitrogen).toFixed(1)}%</div>
                 <div style={{
                   width: '100%',
                   height: 6,
@@ -317,7 +317,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                   overflow: 'hidden'
                 }}>
                   <div style={{
-                    width: `${Math.min(100, (avgNitrogen / 60) * 100)}%`,
+                    width: `${Math.min(100, getPercentage(avgNitrogen, safeIdeals.nitrogen))}%`,
                     height: '100%',
                     background: '#4caf50'
                   }} />
@@ -331,7 +331,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
                 <div style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>Phosphorus (P)</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#2196f3' }}>{avgPhosphorus}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#2196f3' }}>{getPercentage(avgPhosphorus, safeIdeals.phosphorus).toFixed(1)}%</div>
                 <div style={{
                   width: '100%',
                   height: 6,
@@ -341,7 +341,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                   overflow: 'hidden'
                 }}>
                   <div style={{
-                    width: `${Math.min(100, (avgPhosphorus / 60) * 100)}%`,
+                    width: `${Math.min(100, getPercentage(avgPhosphorus, safeIdeals.phosphorus))}%`,
                     height: '100%',
                     background: '#2196f3'
                   }} />
@@ -355,7 +355,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
                 <div style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>Potassium (K)</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#ff9800' }}>{avgPotassium}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#ff9800' }}>{getPercentage(avgPotassium, safeIdeals.potassium).toFixed(1)}%</div>
                 <div style={{
                   width: '100%',
                   height: 6,
@@ -365,7 +365,7 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
                   overflow: 'hidden'
                 }}>
                   <div style={{
-                    width: `${Math.min(100, (avgPotassium / 60) * 100)}%`,
+                    width: `${Math.min(100, getPercentage(avgPotassium, safeIdeals.potassium))}%`,
                     height: '100%',
                     background: '#ff9800'
                   }} />
