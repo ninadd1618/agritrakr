@@ -2,8 +2,14 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { SoilData } from '../models/SoilData.model.js';
+import { CropIdeal } from '../models/CropIdeal.model.js';
 import { appLogger } from '../config/logger.js';
 import { soilService } from '../services/soil.service.js';
+import {
+  buildCropIdealPayload,
+  ensureSingleActiveCrop,
+  resolveIdealContext,
+} from '../services/cropIdeal.service.js';
 console.log("SOIL CONTROLLER LOADED");
 
 const getSoilData = asyncHandler(async (req, res) => {
@@ -40,26 +46,92 @@ const getSoilData = asyncHandler(async (req, res) => {
 });
 
 const getIdealSoilData = asyncHandler(async (req, res) => {
-  // Return ideal soil values matching the constants used in calculations
-  // Aligned with typical agricultural soil testing standards
-  const idealData = {
-    moisture: 50,        // percent
-    pH: 6.5,             // optimal pH
-    temperature: 20,     // degrees Celsius
-    nitrogen: 150,       // ideal level in ppm
-    phosphorus: 70,      // ideal level in ppm
-    sulfur: 25,          // ideal level in ppm
-    zinc: 4,             // ideal level in ppm (typical range 1-6)
-    iron: 35,            // ideal level in ppm (typical range 10-60)
-    manganese: 15,       // ideal level in ppm (typical range 5-25)
-    copper: 6,           // ideal level in ppm (typical range 2-12)
-    potassium: 210,      // ideal level in ppm
-    calcium: 1800,       // ideal level in ppm
-    magnesium: 280,      // ideal level in ppm
-    sodium: 30           // ideal level in ppm
-  };
+  const { cropId, cropName } = req.query;
+  const { crop, ideals } = await resolveIdealContext({ cropId, cropName });
 
-  return res.status(200).json(new ApiResponse(200, idealData, "Ideal soil data fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, {
+    ...ideals,
+    cropId: crop?._id || null,
+    cropName: crop?.name || null,
+    isActive: crop?.isActive || false,
+  }, "Ideal soil data fetched successfully"));
+});
+
+const getCropIdeals = asyncHandler(async (req, res) => {
+  const crops = await CropIdeal.find({}).sort({ updatedAt: -1 }).lean();
+  return res.status(200).json(new ApiResponse(200, crops, 'Crop ideals fetched successfully'));
+});
+
+const createCropIdeal = asyncHandler(async (req, res) => {
+  const payload = buildCropIdealPayload(req.body);
+
+  if (!payload.name) {
+    throw new ApiError(400, 'Crop name is required');
+  }
+
+  const existing = await CropIdeal.findOne({ name: new RegExp(`^${payload.name}$`, 'i') }).lean();
+  if (existing) {
+    throw new ApiError(409, 'Crop already exists');
+  }
+
+  const total = await CropIdeal.countDocuments();
+  if (total === 0) {
+    payload.isActive = true;
+  }
+
+  const created = await CropIdeal.create(payload);
+  if (created.isActive) {
+    await ensureSingleActiveCrop(created._id);
+  }
+
+  return res.status(201).json(new ApiResponse(201, created, 'Crop created successfully'));
+});
+
+const updateCropIdeal = asyncHandler(async (req, res) => {
+  const { cropId } = req.params;
+  const payload = buildCropIdealPayload(req.body);
+
+  if (payload.name) {
+    const duplicate = await CropIdeal.findOne({
+      _id: { $ne: cropId },
+      name: new RegExp(`^${payload.name}$`, 'i'),
+    }).lean();
+
+    if (duplicate) {
+      throw new ApiError(409, 'Crop name already exists');
+    }
+  }
+
+  const updated = await CropIdeal.findByIdAndUpdate(cropId, payload, { new: true, runValidators: true });
+  if (!updated) {
+    throw new ApiError(404, 'Crop not found');
+  }
+
+  if (updated.isActive) {
+    await ensureSingleActiveCrop(updated._id);
+  }
+
+  return res.status(200).json(new ApiResponse(200, updated, 'Crop updated successfully'));
+});
+
+const deleteCropIdeal = asyncHandler(async (req, res) => {
+  const { cropId } = req.params;
+
+  const deleted = await CropIdeal.findByIdAndDelete(cropId);
+  if (!deleted) {
+    throw new ApiError(404, 'Crop not found');
+  }
+
+  if (deleted.isActive) {
+    const fallback = await CropIdeal.findOne({}).sort({ updatedAt: -1 });
+    if (fallback) {
+      fallback.isActive = true;
+      await fallback.save();
+      await ensureSingleActiveCrop(fallback._id);
+    }
+  }
+
+  return res.status(200).json(new ApiResponse(200, { _id: cropId }, 'Crop deleted successfully'));
 });
 
 const createSoilData = asyncHandler(async (req, res) => {
@@ -94,4 +166,8 @@ export {
   getSoilData,
   getIdealSoilData,
   createSoilData,
+  getCropIdeals,
+  createCropIdeal,
+  updateCropIdeal,
+  deleteCropIdeal,
 };

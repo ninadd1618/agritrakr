@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { SoilData } from '../models/SoilData.model.js';
-import { IDEAL_SOIL_VALUES } from '../utils/constants.js';
+import { resolveIdealContext } from '../services/cropIdeal.service.js';
 
 // POST /soil/data - ingest a reading
 const ingestReading = asyncHandler(async (req, res) => {
@@ -47,9 +47,19 @@ const queryReadings = asyncHandler(async (req, res) => {
     return res.status(200).json({ status: 200, data: docs });
 });
 
-// GET /soil/ideals - return hardcoded ideal targets
+// GET /soil/ideals - resolve ideals from active crop, fallback to defaults
 const getIdeals = asyncHandler(async (req, res) => {
-    return res.status(200).json({ status: 200, data: IDEAL_SOIL_VALUES });
+    const { cropId, cropName } = req.query;
+    const { crop, ideals } = await resolveIdealContext({ cropId, cropName });
+    return res.status(200).json({
+        status: 200,
+        data: {
+            ...ideals,
+            cropId: crop?._id || null,
+            cropName: crop?.name || null,
+            isActive: crop?.isActive || false,
+        }
+    });
 });
 
 // GET /soil/table - table-ready data for reports (macro/micro, count/percentage)
@@ -68,7 +78,7 @@ const getTableView = asyncHandler(async (req, res) => {
     const microKeys = ['nitrogen', 'iron', 'manganese', 'zinc', 'copper'];
     const keys = type === 'micro' ? microKeys : macroKeys;
 
-    const ideals = IDEAL_SOIL_VALUES || {};
+    const { ideals } = await resolveIdealContext({});
 
     const rows = docs.map(d => {
         const row = { date: d.timestamp };

@@ -31,7 +31,7 @@ const Sidebar = ({ children, isOpen, toggle }) => {
   ];
 
   const bItem = [
-    { path: "setting", name: "Setting", icon: <IoSettingsOutline /> },
+    { path: "settings", name: "Settings", icon: <IoSettingsOutline /> },
     { path: "/", name: "Logout", icon: <MdOutlineLogout />, isLogout: true },
   ];
 
@@ -41,18 +41,18 @@ const Sidebar = ({ children, isOpen, toggle }) => {
       await axios.post('/api/v1/auth/logout', {}, {
         withCredentials: true,
       });
-      
+
       // Clear Redux state
       dispatch(logout());
-      
+
       // Clear any stored cookies
       document.cookie.split(";").forEach((c) => {
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
-      
+
       // Navigate to login page
       navigate('/');
-      
+
     } catch (error) {
       console.error('Logout error:', error);
       // Even if API fails, clear local state and navigate
@@ -81,9 +81,9 @@ const Sidebar = ({ children, isOpen, toggle }) => {
         <footer className="footer_section">
           {bItem.map((item, index) => (
             item.isLogout ? (
-              <div 
-                key={index} 
-                className="link logout-link" 
+              <div
+                key={index}
+                className="link logout-link"
                 onClick={handleLogout}
                 style={{ cursor: 'pointer' }}
               >

@@ -1,8 +1,8 @@
-import React, { useState} from 'react';
-import { Box,Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
-import { AddMembers, Members, UserDetails } from './utility';
+import { AddMembers, CropMaster, Members, UserDetails } from './utility';
 
 const Component = styled(Box)`
   margin-top: 9%;
@@ -43,14 +43,14 @@ const NavItem = styled(Typography)`
       height: 2px;
       background-color: #333;
     }
-  `:""}
+  `: ""}
 `;
 
-const navItems = ["User details", "Members", "Add Member"];
+const navItems = ["User details", "Members", "Add Member", "Crop Master"];
 
 function Setting() {
   const location = useLocation();
-  const initialSelectedItem = navItems[location.state?.selectedItem ]|| navItems[0]; 
+  const initialSelectedItem = navItems[location.state?.selectedItem] || navItems[0];
   // console.log(initialSelectedItem)
 
   const [selectedItem, setSelectedItem] = useState(initialSelectedItem);
@@ -76,10 +76,10 @@ function Setting() {
         </Navbar>
       </Header>
       <MidSection>
-        {
-          selectedItem === "User details" ? <UserDetails /> : selectedItem === "Members" ? <Members />
-            : <Box sx={{ justifyContent: 'center', display: 'flex' }}><AddMembers /></Box>
-        }
+        {selectedItem === 'User details' && <UserDetails />}
+        {selectedItem === 'Members' && <Members />}
+        {selectedItem === 'Add Member' && <Box sx={{ justifyContent: 'center', display: 'flex' }}><AddMembers /></Box>}
+        {selectedItem === 'Crop Master' && <CropMaster />}
       </MidSection>
     </Component>
   );

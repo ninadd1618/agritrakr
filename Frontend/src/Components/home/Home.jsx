@@ -159,8 +159,8 @@ const Home = ({ isOpen }) => {
           .getDate()
           .toString()
           .padStart(2, "0")}/${(timestamp.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}/${timestamp.getFullYear()}`,
+            .toString()
+            .padStart(2, "0")}/${timestamp.getFullYear()}`,
       },
     ]);
   }, [miniData, previousData]);
@@ -180,7 +180,7 @@ const Home = ({ isOpen }) => {
               <IconButton
                 sx={{ color: "#1b5e20" }}
                 onClick={() =>
-                  navigate("setting", { state: { selectedItem: 2 } })
+                  navigate("settings", { state: { selectedItem: 2 } })
                 }
               >
                 <FaUserPlus />

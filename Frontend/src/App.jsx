@@ -83,7 +83,7 @@ function App() {
               element={<MiniDashboard isOpen={isOpen} toggle={toggleSidebar} />}
             />
             <Route
-              path="setting"
+              path="settings"
               element={<Setting isOpen={isOpen} toggle={toggleSidebar} />}
             />
             <Route
