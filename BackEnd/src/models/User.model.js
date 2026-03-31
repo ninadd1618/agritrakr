@@ -33,6 +33,16 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    farmName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true }
 );

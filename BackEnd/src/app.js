@@ -47,6 +47,7 @@ import userRouter from './routes/user.routes.js';
 import oeeRouter from './routes/oee.routes.js';
 import dataRouter from './routes/data.routes.js';
 import reportsRouter from './routes/reports.routes.js';
+import userSettingsRouter from './routes/userSettings.routes.js';
 
 // API routes
 app.use('/soil', legacySoilRoutes);
@@ -56,6 +57,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/oee', oeeRouter);
 app.use('/api/v1/data', dataRouter);
 app.use('/api/v1/reports', reportsRouter);
+app.use('/api/v1/settings', userSettingsRouter);
 
 // 404 handler
 app.use((req, res, next) => {

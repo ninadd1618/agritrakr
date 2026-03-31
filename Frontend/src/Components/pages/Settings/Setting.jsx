@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
-import { AddMembers, CropMaster, Members, UserDetails } from './utility';
+import { AddMembers, CropMaster, Members, UserDetails, UserProfile, FarmSettings } from './utility';
 
 const Component = styled(Box)`
   margin-top: 9%;
@@ -46,7 +46,7 @@ const NavItem = styled(Typography)`
   `: ""}
 `;
 
-const navItems = ["User details", "Members", "Add Member", "Crop Master"];
+const navItems = ["User details", "Members", "Add Member", "Crop Master", "User Profile", "Farm Settings"];
 
 function Setting() {
   const location = useLocation();
@@ -80,6 +80,8 @@ function Setting() {
         {selectedItem === 'Members' && <Members />}
         {selectedItem === 'Add Member' && <Box sx={{ justifyContent: 'center', display: 'flex' }}><AddMembers /></Box>}
         {selectedItem === 'Crop Master' && <CropMaster />}
+        {selectedItem === 'User Profile' && <UserProfile />}
+        {selectedItem === 'Farm Settings' && <FarmSettings />}
       </MidSection>
     </Component>
   );

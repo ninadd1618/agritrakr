@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\Industry_project\\Flowmen-common\\BackEnd\\logs\\.d7a3a1598e15383fac5d9bc407f6f538bba22c09-audit.json",
+    "files": [
+        {
+            "date": 1774896691990,
+            "name": "D:\\Industry_project\\Flowmen-common\\BackEnd\\logs\\application-2026-03-31.log",
+            "hash": "7b56b36290dfb1ddd9ea12a6008fa25385857719aad4cd40b753e58b9c05e8af"
+        }
+    ],
+    "hashType": "sha256"
+}
