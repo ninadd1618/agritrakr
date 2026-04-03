@@ -13,14 +13,13 @@ import {
 console.log("SOIL CONTROLLER LOADED");
 
 const getSoilData = asyncHandler(async (req, res) => {
-  const { deviceId, limit, start, end } = req.query;
+  const { deviceId, limit, start, end, farmId } = req.query;
 
   // Build query filter
   const filter = {};
 
-  if (deviceId) {
-    filter.deviceId = deviceId;
-  }
+  if (deviceId) filter.deviceId = deviceId;
+  if (farmId) filter.farmId = farmId;
 
   // Add date range filter if provided
   if (start || end) {
@@ -135,7 +134,11 @@ const deleteCropIdeal = asyncHandler(async (req, res) => {
 });
 
 const createSoilData = asyncHandler(async (req, res) => {
-  const { deviceId, moisture, temperature, pH, nitrogen, phosphorus, potassium, sulfur, zinc, iron, manganese, copper, calcium, magnesium, sodium } = req.body;
+  const {
+    deviceId, moisture, temperature, pH, nitrogen, phosphorus, potassium,
+    sulfur, zinc, iron, manganese, copper, calcium, magnesium, sodium,
+    farmId, latitude, longitude,
+  } = req.body;
 
   if (!deviceId || [moisture, temperature, pH, nitrogen, phosphorus, potassium].some(field => field === undefined || field === null)) {
     throw new ApiError(400, "All soil data fields are required");
@@ -143,27 +146,36 @@ const createSoilData = asyncHandler(async (req, res) => {
 
   const newSoilData = await soilService.createSoilData({
     deviceId,
-    moisture,
-    temperature,
-    pH,
-    nitrogen,
-    phosphorus,
-    potassium,
-    sulfur,
-    zinc,
-    iron,
-    manganese,
-    copper,
-    calcium,
-    magnesium,
-    sodium,
+    farmId: farmId || null,
+    latitude: latitude !== undefined ? Number(latitude) : null,
+    longitude: longitude !== undefined ? Number(longitude) : null,
+    moisture, temperature, pH, nitrogen, phosphorus, potassium,
+    sulfur, zinc, iron, manganese, copper, calcium, magnesium, sodium,
   });
 
   return res.status(201).json(new ApiResponse(201, newSoilData, "Soil data created successfully"));
 });
 
+/**
+ * GET /api/v1/soil/farm/:farmId
+ * Returns geo-tagged soil readings for a specific farm (for map visualization)
+ */
+const getSoilDataByFarm = asyncHandler(async (req, res) => {
+  const { farmId } = req.params;
+  const { limit = 100 } = req.query;
+
+  const readings = await SoilData
+    .find({ farmId, latitude: { $ne: null }, longitude: { $ne: null } })
+    .sort({ timestamp: -1 })
+    .limit(parseInt(limit))
+    .lean();
+
+  return res.status(200).json(new ApiResponse(200, readings, 'Farm soil data fetched successfully'));
+});
+
 export {
   getSoilData,
+  getSoilDataByFarm,
   getIdealSoilData,
   createSoilData,
   getCropIdeals,

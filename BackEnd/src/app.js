@@ -59,7 +59,8 @@ app.use('/api/v1/devices', deviceRouter);
 app.use('/api/v1/oee', oeeRouter);
 app.use('/api/v1/data', dataRouter);
 app.use('/api/v1/reports', reportsRouter);
-app.use('/api/v1/userSettings', userSettingsRouter);
+app.use('/api/v1/settings', userSettingsRouter);
+console.log("Settings router mounted at /api/v1/settings");
 
 // 404 handler
 app.use((req, res, next) => {

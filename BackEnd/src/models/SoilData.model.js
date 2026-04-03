@@ -8,6 +8,20 @@ const soilDataSchema = new Schema(
       trim: true,
       index: true,
     },
+    farmId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Farm',
+      index: true,
+      default: null,
+    },
+    latitude: {
+      type: Number,
+      default: null,
+    },
+    longitude: {
+      type: Number,
+      default: null,
+    },
     moisture: {
       type: Number,
       required: true,

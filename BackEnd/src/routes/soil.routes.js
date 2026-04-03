@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getSoilData,
+  getSoilDataByFarm,
   getIdealSoilData,
   createSoilData,
   getCropIdeals,
@@ -20,5 +21,6 @@ router.route("/ideals").get(getIdealSoilData);
 router.route("/table").get(getTableView);
 router.route('/crops').get(getCropIdeals).post(createCropIdeal);
 router.route('/crops/:cropId').put(updateCropIdeal).delete(deleteCropIdeal);
+router.route('/farm/:farmId').get(getSoilDataByFarm);  // Map visualization: geo-tagged readings per farm
 
 export default router;
