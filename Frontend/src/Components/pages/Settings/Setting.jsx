@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
 import { AddMembers, CropMaster, Members, UserDetails, UserProfile, FarmSettings } from './utility';
+import DeviceSettings from './DeviceSettings';
 
 const Component = styled(Box)`
   margin-top: 9%;
@@ -46,7 +47,7 @@ const NavItem = styled(Typography)`
   `: ""}
 `;
 
-const navItems = ["User details", "Members", "Add Member", "Crop Master", "User Profile", "Farm Settings"];
+const navItems = ["User details", "Members", "Add Member", "Crop Master", "User Profile", "Farm Settings", "Device Settings"];
 
 function Setting() {
   const location = useLocation();
@@ -82,6 +83,7 @@ function Setting() {
         {selectedItem === 'Crop Master' && <CropMaster />}
         {selectedItem === 'User Profile' && <UserProfile />}
         {selectedItem === 'Farm Settings' && <FarmSettings />}
+        {selectedItem === 'Device Settings' && <DeviceSettings />}
       </MidSection>
     </Component>
   );
