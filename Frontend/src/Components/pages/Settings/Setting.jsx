@@ -31,7 +31,7 @@ const Navbar = styled(Box)`
 const NavItem = styled(Typography)`
   cursor: pointer;
   position: relative;
-  ${(props) => props.isActive ? `
+  ${(props) => props.$isActive ? `
     color: #333;
     font-weight: 600;
     &::after {
@@ -67,7 +67,7 @@ function Setting() {
           {navItems.map((item, index) => (
             <NavItem
               key={index}
-              isActive={selectedItem === item}
+              $isActive={selectedItem === item}
               onClick={() => handleItemClick(item)}
             >
               {item}
