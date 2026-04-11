@@ -1,0 +1,10 @@
+# Normalize text files to LF in the repository for cross-platform consistency
+* text=auto eol=lf
+
+# Keep Windows shell scripts with CRLF so they run natively in PowerShell/CMD
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Keep Unix shell scripts LF
+*.sh text eol=lf
