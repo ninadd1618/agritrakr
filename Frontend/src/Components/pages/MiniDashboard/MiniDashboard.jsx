@@ -9,9 +9,9 @@ import { useSelector } from 'react-redux';
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
   position: sticky;
-  top: 0;
+  top: 70px;   /* sit below the global fixed header */
   width: 100%;
-  z-index: 1;
+  z-index: 5;
   padding: 0% 2% 0% 1%;
   height: 70px;
   align-items: center;
@@ -20,17 +20,20 @@ const Header = styled(Box)`
 
   @media (max-width: 768px) {
     padding: 0 12px;
+    top: 60px;
   }
 `;
 
 const GridContainer = styled.div`
-  padding-top: 1px;
+  padding-top: 70px;  /* clear the global fixed header */
   display: block;
   min-height: 100vh;
   justify-content: center;
   width: 100%;
   position: relative;
+
   @media (max-width: 768px) {
+    padding-top: 60px;
     width: 100%;
   }
 `;
