@@ -10,22 +10,27 @@ import { saveAs } from 'file-saver';
 
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
-  position: fixed;
-  width: ${(props) => (props.isOpen ? "88%" : "100%")};
+    position: sticky;
+    top: 0;
+    width: 100%;
   z-index: 1;
   padding: 0% 2% 0% 1%;
   height: 70px;
   align-items: center;
   display: flex;
   justify-content: space-between;
+
+    @media (max-width: 768px) {
+        padding: 0 12px;
+    }
 `;
 
 const GridContainer = styled.div`
   padding-top: 1px;
-  display: inline-block;
+    display: block;
   min-height: 100vh;
   justify-content: center;
-  width: ${(props) => (props?.isOpen ? "98%" : "98%")};
+    width: 100%;
   position: relative;
   @media (max-width: 768px) {
     width: 100%;
@@ -473,23 +478,37 @@ const Dashboard = ({ isOpen, toggle }) => {
                         else good++;
                     });
 
-                    const keyMetrics = ['moisture', 'pH', 'nitrogen', 'phosphorus', 'potassium'];
-                    const keyScoresArr = [];
-                    keyMetrics.forEach(key => {
+                    // SHI = sum(score_i * weight_i), with score_i on a 1-4 scale.
+                    const shiIndicators = ['moisture', 'pH', 'nitrogen', 'phosphorus', 'potassium'];
+                    const indicatorWeights = {
+                        moisture: 0.2,
+                        pH: 0.2,
+                        nitrogen: 0.2,
+                        phosphorus: 0.2,
+                        potassium: 0.2,
+                    };
+                    const scoreIndicator = (value, ideal) => {
+                        const deviationPercent = (Math.abs(value - ideal) / ideal) * 100;
+                        if (deviationPercent <= 5) return 4; // excellent
+                        if (deviationPercent <= 10) return 3; // good
+                        if (deviationPercent <= 20) return 2; // fair
+                        return 1; // poor
+                    };
+
+                    let weightedScore = 0;
+                    let totalWeight = 0;
+                    shiIndicators.forEach((key) => {
                         const value = getLastValue(key);
                         const ideal = idealsData[key];
                         if (value == null || ideal == null || ideal === 0) return;
-                        const deviation = Math.abs(value - ideal);
-                        const deviationPercent = (deviation / ideal) * 100;
-                        let score;
-                        if (deviationPercent <= 5) score = 100;
-                        else if (deviationPercent <= 10) score = 90;
-                        else if (deviationPercent <= 20) score = 70;
-                        else if (deviationPercent <= 30) score = 50;
-                        else score = Math.max(20, 100 - deviationPercent);
-                        keyScoresArr.push(score);
+                        const weight = indicatorWeights[key] ?? 1;
+                        weightedScore += scoreIndicator(value, ideal) * weight;
+                        totalWeight += weight;
                     });
-                    const overallHealth = keyScoresArr.length > 0 ? Math.round(keyScoresArr.reduce((a, b) => a + b, 0) / keyScoresArr.length) : null;
+
+                    const overallHealth = totalWeight > 0
+                        ? Math.round(((weightedScore / totalWeight) / 4) * 100)
+                        : null;
 
                     const moistureVal = getLastValue('moisture');
                     const pHVal = getLastValue('pH');
@@ -557,7 +576,8 @@ const Dashboard = ({ isOpen, toggle }) => {
                 padding: 24,
                 background: 'white',
                 minHeight: '100vh',
-                marginTop: 70,
+                marginTop: 0,
+                boxSizing: 'border-box',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
             }}>
                 {/* Summary Overview */}
@@ -574,7 +594,7 @@ const Dashboard = ({ isOpen, toggle }) => {
                             <div style={{ fontSize: 32, fontWeight: 700, color: '#1976d2' }}>
                                 {summaryData.overallHealth != null ? `${summaryData.overallHealth}%` : '-'}
                             </div>
-                            <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>Based on moisture levels</div>
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>Based on weighted SHI formula</div>
                         </div>
                         <div style={{
                             background: 'white',

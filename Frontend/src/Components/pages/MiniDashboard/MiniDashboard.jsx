@@ -8,22 +8,27 @@ import { useSelector } from 'react-redux';
 
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
-  position: fixed;
-  width: ${(props) => (props.isOpen ? "88%" : "100%")};
+  position: sticky;
+  top: 0;
+  width: 100%;
   z-index: 1;
   padding: 0% 2% 0% 1%;
   height: 70px;
   align-items: center;
   display: flex;
   justify-content: space-between;
+
+  @media (max-width: 768px) {
+    padding: 0 12px;
+  }
 `;
 
 const GridContainer = styled.div`
   padding-top: 1px;
-  display: inline-block;
+  display: block;
   min-height: 100vh;
   justify-content: center;
-  width: ${(props) => (props?.isOpen ? "98%" : "98%")};
+  width: 100%;
   position: relative;
   @media (max-width: 768px) {
     width: 100%;

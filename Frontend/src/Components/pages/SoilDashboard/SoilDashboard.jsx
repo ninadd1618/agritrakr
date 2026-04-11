@@ -169,10 +169,38 @@ export default function SoilDashboard() {
                     });
                     const avgNutrient = nutrientPercentages.reduce((sum, p) => sum + p, 0) / metrics.length;
 
-                    const moistureVal = Number(latest.moisture);
-                    const moistureIdeal = Number(idealsData.moisture);
-                    const overallHealth = (Number.isFinite(moistureVal) && Number.isFinite(moistureIdeal) && moistureIdeal > 0)
-                        ? Math.round((moistureVal / moistureIdeal) * 100)
+                    // SHI = sum(score_i * weight_i), where each score_i is 1-4.
+                    const shiIndicators = ['moisture', 'pH', 'phosphorus', 'potassium', 'magnesium'];
+                    const indicatorWeights = {
+                        moisture: 0.2,
+                        pH: 0.2,
+                        phosphorus: 0.2,
+                        potassium: 0.2,
+                        magnesium: 0.2,
+                    };
+                    const scoreIndicator = (value, ideal) => {
+                        if (!Number.isFinite(value) || !Number.isFinite(ideal) || ideal === 0) return null;
+                        const deviationPercent = (Math.abs(value - ideal) / ideal) * 100;
+                        if (deviationPercent <= 5) return 4;
+                        if (deviationPercent <= 10) return 3;
+                        if (deviationPercent <= 20) return 2;
+                        return 1;
+                    };
+
+                    let weightedScore = 0;
+                    let totalWeight = 0;
+                    shiIndicators.forEach((key) => {
+                        const value = Number(latest[key]);
+                        const ideal = Number(idealsData[key]);
+                        const score = scoreIndicator(value, ideal);
+                        if (score == null) return;
+                        const weight = indicatorWeights[key] ?? 1;
+                        weightedScore += score * weight;
+                        totalWeight += weight;
+                    });
+
+                    const overallHealth = totalWeight > 0
+                        ? Math.round(((weightedScore / totalWeight) / 4) * 100)
                         : 0;
 
                     setSummaryData({

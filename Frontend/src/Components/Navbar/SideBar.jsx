@@ -15,7 +15,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
 import axios from 'axios';
 
-const Sidebar = ({ children, isOpen, toggle }) => {
+const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -63,6 +63,7 @@ const Sidebar = ({ children, isOpen, toggle }) => {
 
   return (
     <div className="sidebar-container">
+      {isMobile && isOpen && <div className="sidebar-backdrop" onClick={toggle} />}
       <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
         <div className="top_section">
           <h1 className={`logo ${isOpen ? "show" : "hide"}`}>iStromen</h1>
