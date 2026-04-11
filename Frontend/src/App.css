@@ -92,7 +92,7 @@ main {
 	width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 	.grid-container {
 		grid-template-columns: 1fr !important;
 	}
@@ -113,7 +113,7 @@ main {
 	position: relative;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 	.app-content {
 		margin-left: 0;
 	}
@@ -136,9 +136,10 @@ main {
 	}
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 	.header {
-		width: 96%;
+		width: 100%;
+		left: 0 !important;
 	}
 
 	.drop-button-container .MuiIconButton-root {
@@ -155,7 +156,9 @@ main {
 @media (max-width: 480px) {
 	.header {
 		height: 60px;
-		width: 85%;
+		width: 100%;
+		left: 0 !important;
+		right: 0 !important;
 	}
 
 	.drop-button-container {
@@ -307,7 +310,7 @@ main {
 	margin-bottom: 10px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 	.sidebar {
 		width: 240px;
 		transform: translateX(-100%);
@@ -391,7 +394,7 @@ main {
 	box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
 	main,
 	body > div {
 		width: 100%;

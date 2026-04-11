@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import {
     Box,
@@ -10,6 +10,7 @@ import {
     Alert,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -112,6 +113,8 @@ function makeSoilIcon(color, size = 10) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 function FarmBoundaryMap({ farm, onClose }) {
+    const isMobile = useMediaQuery('(max-width:600px)');
+
     const mapDivRef   = useRef(null);
     const mapRef      = useRef(null);
     const tileRef     = useRef(null);
@@ -321,19 +324,34 @@ function FarmBoundaryMap({ farm, onClose }) {
 
             {/* ── Top toolbar ── */}
             <Box sx={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                px: 2, py: 1.2, bgcolor: COLORS.surface, borderBottom: `1px solid ${COLORS.border}`,
-                flexWrap: 'wrap', gap: 1,
+                px: { xs: 1.5, sm: 2 },
+                py: 1.2,
+                bgcolor: COLORS.surface,
+                borderBottom: `1px solid ${COLORS.border}`,
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                justifyContent: 'space-between',
+                gap: 1,
             }}>
-                {/* Left — farm name */}
-                <Box>
-                    <Typography sx={{ fontSize: 11, color: COLORS.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Farm</Typography>
-                    <Typography sx={{ fontWeight: 700, fontSize: 16, color: COLORS.textPrimary }}>{farm.farmName}</Typography>
+                {/* Row 1 on mobile: farm name + close button */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                        <Typography sx={{ fontSize: 11, color: COLORS.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Farm</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: { xs: 14, sm: 16 }, color: COLORS.textPrimary }}>{farm.farmName}</Typography>
+                    </Box>
+                    <Button
+                        size="small" variant="text"
+                        onClick={onClose}
+                        sx={{ color: COLORS.textMuted, fontSize: 12, ml: 1, display: { xs: 'inline-flex', sm: 'none' }, '&:hover': { color: COLORS.textPrimary } }}
+                    >
+                        ✕ Close
+                    </Button>
                 </Box>
 
-                {/* Center — variable selector */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography sx={{ fontSize: 12, color: COLORS.textMuted }}>Variable:</Typography>
+                {/* Row 2 on mobile: variable selector + tile toggle + close (desktop) */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography sx={{ fontSize: 12, color: COLORS.textMuted, display: { xs: 'none', sm: 'block' } }}>Variable:</Typography>
                     <Select
                         size="small"
                         value={variable}
@@ -343,7 +361,8 @@ function FarmBoundaryMap({ farm, onClose }) {
                             border: `1px solid ${COLORS.border}`,
                             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
                             '& .MuiSvgIcon-root': { color: COLORS.textMuted },
-                            minWidth: 140,
+                            flex: { xs: 1, sm: 'none' },
+                            minWidth: { xs: 'unset', sm: 140 },
                         }}
                         MenuProps={{ PaperProps: { sx: { bgcolor: COLORS.surface, color: COLORS.textPrimary } } }}
                     >
@@ -353,10 +372,7 @@ function FarmBoundaryMap({ farm, onClose }) {
                             </MenuItem>
                         ))}
                     </Select>
-                </Box>
 
-                {/* Right — tile toggle + close */}
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Tooltip title={tileMode === 'satellite' ? 'Switch to Street map' : 'Switch to Satellite'}>
                         <Button
                             size="small"
@@ -371,10 +387,12 @@ function FarmBoundaryMap({ farm, onClose }) {
                             {tileMode === 'satellite' ? 'Street' : 'Satellite'}
                         </Button>
                     </Tooltip>
+
+                    {/* Close — desktop only (mobile close is in row 1) */}
                     <Button
                         size="small" variant="text"
                         onClick={onClose}
-                        sx={{ color: COLORS.textMuted, fontSize: 12, '&:hover': { color: COLORS.textPrimary } }}
+                        sx={{ color: COLORS.textMuted, fontSize: 12, display: { xs: 'none', sm: 'inline-flex' }, '&:hover': { color: COLORS.textPrimary } }}
                     >
                         ✕ Close
                     </Button>
@@ -401,7 +419,10 @@ function FarmBoundaryMap({ farm, onClose }) {
                         position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
                         zIndex: 800, bgcolor: 'rgba(13,17,23,0.9)', border: `1px solid ${COLORS.accent}`,
                         borderRadius: 20, px: 2, py: 0.5,
-                        color: COLORS.accent, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+                        color: COLORS.accent, fontSize: { xs: 11, sm: 12 }, fontWeight: 600,
+                        whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                        maxWidth: { xs: '85%', sm: 'none' },
+                        textAlign: 'center',
                     }}>
                         🖊️ Click map to place boundary points · Drag to adjust
                     </Box>
@@ -423,7 +444,7 @@ function FarmBoundaryMap({ farm, onClose }) {
                     </Box>
                 )}
 
-                <div ref={mapDivRef} style={{ height: 480, width: '100%' }} />
+                <div ref={mapDivRef} style={{ height: isMobile ? 300 : 480, width: '100%' }} />
             </Box>
 
             {/* ── Color legend ── */}

@@ -22,24 +22,29 @@ function App() {
   const loginstate = useSelector((state) => state.auth.status);
 
   const toggleSidebar = () => {
-    if (window.innerWidth > 480) {
+    if (window.innerWidth > 600) {
+      setIsOpen(!isOpen);
+    } else {
+      // Mobile: always toggle regardless
       setIsOpen(!isOpen);
     }
   };
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 480) {
+      if (window.innerWidth <= 600) {
+        // Phone: force close so hamburger menu takes over
+        setIsOpen(false);
+      } else if (window.innerWidth <= 900) {
+        // Tablet (iPad Mini / iPad Air portrait): collapse to icon-only
         setIsOpen(false);
       }
     };
 
-    // Check screen width when component mounts
+    // Check on mount
     handleResize();
 
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };

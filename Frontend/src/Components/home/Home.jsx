@@ -6,7 +6,7 @@ import { Navbar as BootstrapNavbar } from "react-bootstrap";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Notification from "./Utility/Notification.jsx";
-import { FaUserPlus, FaUser } from "react-icons/fa6";
+import { FaUserPlus, FaUser, FaBars } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import barData from "../pages/api/barData.js";
 import { logout } from "../../redux/authSlice";
@@ -36,19 +36,21 @@ const Header = styled(Grid)`
 
   @media (max-width: 480px) {
     margin-right: 0;
-    width: 96% !important;
+    width: 100% !important;
   }
 `;
 
-const Container = styled(Box)(({ isOpen }) => ({
+const Container = styled(Box)(({ sidebarwidth }) => ({
   position: "fixed",
   display: "block",
   zIndex: 7,
-  width: isOpen ? "87%" : "98%",
-  "@media (max-width: 480px)": {
-    width: "90% !important",
+  left: `${sidebarwidth}px`,
+  right: 0,
+  transition: 'left 0.3s ease',
+  "@media (max-width: 600px)": {
+    left: "0 !important",
+    right: 0,
     height: "51px",
-    marginLeft: "20px",
   },
 }));
 
@@ -62,7 +64,7 @@ const TitleText = styled(Typography)`
 
 /* ================= COMPONENT ================= */
 
-const Home = ({ isOpen }) => {
+const Home = ({ isOpen, isMobile = false, sidebarWidth = 0, toggle }) => {
   const userData = useSelector((state) => state.auth.userData);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -168,9 +170,26 @@ const Home = ({ isOpen }) => {
   /* ================= UI ================= */
 
   return (
-    <Container isOpen={isOpen} className="header">
+    <Container sidebarwidth={sidebarWidth} className="header">
       <BootstrapNavbar expand="lg">
         <Header container alignItems="center" justifyContent="space-between">
+          {/* Hamburger — phones only (sidebar is hidden, need a way to open it) */}
+          {isMobile && (
+            <Grid item xs="auto" sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton
+                onClick={toggle}
+                sx={{
+                  color: '#1b5e20',
+                  p: 0.5,
+                  mr: 0.5,
+                }}
+                aria-label="Open menu"
+              >
+                <FaBars size={22} />
+              </IconButton>
+            </Grid>
+          )}
+
           <Grid item lg={10} md={8} sm={7} xs={7} sx={{ color: "#fff" }}>
             <TitleText>{userData?.companyName}</TitleText>
           </Grid>

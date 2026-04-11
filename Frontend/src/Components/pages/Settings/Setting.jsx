@@ -11,27 +11,63 @@ const Component = styled(Box)`
   justify-content: center;
   height: auto;
   margin-bottom: 2% !important;
+
+  @media (max-width: 768px) {
+    margin-top: 72px;
+    margin-left: 0;
+    padding: 0 4px;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 62px;
+  }
 `;
 
 const Header = styled(Box)`
   margin: 3%;
   border-bottom: 2px solid lightgray;
+
+  @media (max-width: 768px) {
+    margin: 12px 12px 0 12px;
+  }
 `;
 
 const MidSection = styled(Box)`
   margin: 3%;
+
+  @media (max-width: 768px) {
+    margin: 16px 12px;
+  }
 `;
 
+/* Scrollable tab strip — hides scrollbar visually but remains functional */
 const Navbar = styled(Box)`
   display: flex;
   gap: 30px;
   color: gray;
   margin-top: 2%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    gap: 18px;
+    margin-top: 10px;
+  }
 `;
 
 const NavItem = styled(Typography)`
   cursor: pointer;
   position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 15px;
+
   ${(props) => props.$isActive ? `
     color: #333;
     font-weight: 600;
@@ -45,6 +81,10 @@ const NavItem = styled(Typography)`
       background-color: #333;
     }
   `: ""}
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
 `;
 
 const navItems = ["User details", "Members", "Add Member", "Crop Master", "User Profile", "Farm Settings", "Device Settings"];
@@ -52,7 +92,6 @@ const navItems = ["User details", "Members", "Add Member", "Crop Master", "User 
 function Setting() {
   const location = useLocation();
   const initialSelectedItem = navItems[location.state?.selectedItem] || navItems[0];
-  // console.log(initialSelectedItem)
 
   const [selectedItem, setSelectedItem] = useState(initialSelectedItem);
 
@@ -63,7 +102,7 @@ function Setting() {
   return (
     <Component>
       <Header>
-        <Typography sx={{ fontSize: 30, fontWeight: 600 }}>Settings</Typography>
+        <Typography sx={{ fontSize: { xs: 22, sm: 30 }, fontWeight: 600 }}>Settings</Typography>
         <Navbar>
           {navItems.map((item, index) => (
             <NavItem

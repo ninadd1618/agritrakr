@@ -19,7 +19,7 @@ const MainContent = styled(Box)(({ marginLeft }) => ({
   overflowX: 'hidden',
   width: '100%',
   boxSizing: 'border-box',
-  '@media (max-width: 768px)': {
+  '@media (max-width: 600px)': {
     marginLeft: '0px',
   },
 }));
@@ -56,17 +56,17 @@ const NestedComponent = styled(Box)`
     -ms-overflow-style: -ms-autohiding-scrollbar;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 600px) {
     width: 100%;
   }
 `;
 
 function Pages({ isOpen, toggle }) {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 600);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -80,7 +80,7 @@ function Pages({ isOpen, toggle }) {
       <Sidebar isOpen={isOpen} toggle={toggle} isMobile={isMobile} />
       <MainContent marginLeft={sidebarWidth}>
         <HomeComponent>
-          <Home isOpen={isOpen} />
+          <Home isOpen={isOpen} isMobile={isMobile} sidebarWidth={sidebarWidth} toggle={toggle} />
         </HomeComponent>
         <NestedComponent>
           <Outlet />
