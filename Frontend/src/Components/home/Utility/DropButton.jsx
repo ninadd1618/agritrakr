@@ -11,21 +11,19 @@ const DropButton = ({ username, show, onLogout }) => {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('Logout button clicked in dropdown');
-        
         try {
             if (onLogout && typeof onLogout === 'function') {
-                console.log('Calling onLogout function from dropdown');
                 await onLogout();
             } else {
-                console.log('No onLogout function, using fallback');
                 document.cookie.split(";").forEach((c) => {
                     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
                 });
+                localStorage.setItem('disableAutoLogin', '1');
                 navigate('/');
             }
         } catch (error) {
             console.error('Logout error:', error);
+            localStorage.setItem('disableAutoLogin', '1');
             navigate('/');
         }
     };

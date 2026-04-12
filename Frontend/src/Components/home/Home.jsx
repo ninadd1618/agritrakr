@@ -92,6 +92,7 @@ const Home = ({ isOpen, isMobile = false, sidebarWidth = 0, toggle }) => {
       console.error("Logout API error:", err);
     } finally {
       dispatch(logout());
+      localStorage.setItem('disableAutoLogin', '1');
       navigate("/");
     }
   };
@@ -210,18 +211,24 @@ const Home = ({ isOpen, isMobile = false, sidebarWidth = 0, toggle }) => {
               <FaUser />
             </IconButton>
 
-            <IconButton
-              sx={{ color: "#1b5e20" }}
-              onClick={() => setShowNotifications(p => !p)}
-            >
-              <Badge badgeContent={notifications.length} color="error">
-                {showNotifications ? (
-                  <NotificationsActiveIcon sx={{ fontSize: 30 }} />
-                ) : (
-                  <NotificationsIcon sx={{ fontSize: 30 }} />
-                )}
-              </Badge>
-            </IconButton>
+            <div ref={downNote}>
+              <IconButton
+                sx={{ color: "#1b5e20" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowNotifications(p => !p);
+                }}
+              >
+                <Badge badgeContent={notifications.length} color="error">
+                  {showNotifications ? (
+                    <NotificationsActiveIcon sx={{ fontSize: 30 }} />
+                  ) : (
+                    <NotificationsIcon sx={{ fontSize: 30 }} />
+                  )}
+                </Badge>
+              </IconButton>
+            </div>
           </Icons>
         </Header>
       </BootstrapNavbar>
@@ -232,7 +239,7 @@ const Home = ({ isOpen, isMobile = false, sidebarWidth = 0, toggle }) => {
         onLogout={handleLogout}
       />
 
-      <div ref={downNote}>
+      <div>
         {showNotifications && (
           <Notification
             notifications={notifications}

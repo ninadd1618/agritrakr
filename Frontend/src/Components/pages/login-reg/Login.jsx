@@ -28,15 +28,14 @@ const EmailBox = styled(Box, {
 }));
 
 function Login() {
-    // Requests use a relative path; Vite dev proxy will target backend
-    const URL = "";
-    // const URL = "http://localhost:3000";
     const [activeBox, setActiveBox] = useState(null);
     const [hidePass, setHidePass] = useState(true);
     const emailBoxRef = useRef(null);
     const navigate = useNavigate();
     const [obj, setObj] = useState({ email: '', password: '' });
+    const [rememberMe, setRememberMe] = useState(false);
     const dispatch = useDispatch();
+    const autoLoginTriedRef = useRef(false);
 
     const [toast, setToast] = useState(false);
     const [alert, setAlert] = useState(false);
@@ -63,36 +62,61 @@ function Login() {
     const handlePasswordChange = (event) => {
         setObj({ ...obj, password: event.target.value });
     };
-    
-    const setCookies = () => {
-        const user = obj.email;
-        const pass = obj.password;
 
-        document.cookie = "user=" + user + ";path=http://172.104.242.7:5173/";
-        document.cookie = "pass=" + pass + ";path=http://172.104.242.7:5173/";
-    }
+    const performLogin = async (credentials, isAuto = false, shouldRemember = rememberMe) => {
+        try {
+            const result = (await axios.post(`/api/v1/auth/login`, credentials, {
+                withCredentials: true,
+            })).data;
+            dispatch(login({ userData: result.data?.user, role: result.data.user?.role }));
+            if (!isAuto) {
+                // Successful manual login re-enables future auto-login.
+                localStorage.removeItem('disableAutoLogin');
+            }
+            if (shouldRemember) {
+                localStorage.setItem('rememberedEmail', credentials.email);
+                localStorage.setItem('rememberedPassword', credentials.password);
+            } else {
+                localStorage.removeItem('rememberedEmail');
+                localStorage.removeItem('rememberedPassword');
+            }
+            if (!isAuto) setToast(true)
+            navigate('/app/Dashboard');
+            setObj({ email: '', password: '' });
 
-    const getCookie = () => {
-        const decodedCookies = document.cookie;
-        const cookiesArray = decodedCookies.split('; ');
-        const cookies = {};
-
-        cookiesArray.forEach(cookie => {
-            const [key, value] = cookie.split('=');
-            cookies[key] = value;
-        });
-
-        setObj({
-            email: cookies.user || '',
-            password: cookies.pass || ''
-        })
+        } catch (error) {
+            if (!isAuto) {
+                setToast(true);
+                setAlert(true);
+                setError(true)
+            } else {
+                localStorage.removeItem('rememberedEmail');
+                localStorage.removeItem('rememberedPassword');
+                setRememberMe(false);
+            }
+            console.error('Login error: ', error?.response?.data || error);
+        }
     };
 
     //<--------handle BropButton---------->
     useEffect(() => {
 
         dispatch(logout())
-        getCookie()
+        const rememberedEmail = localStorage.getItem('rememberedEmail') || '';
+        const rememberedPassword = localStorage.getItem('rememberedPassword') || '';
+        const hasRememberedCredentials = rememberedEmail && rememberedPassword;
+        const disableAutoLogin = localStorage.getItem('disableAutoLogin') === '1';
+
+        if (hasRememberedCredentials) {
+            const rememberedObj = { email: rememberedEmail, password: rememberedPassword };
+            setObj(rememberedObj);
+            setRememberMe(true);
+            if (!disableAutoLogin && !autoLoginTriedRef.current) {
+                autoLoginTriedRef.current = true;
+                performLogin(rememberedObj, true, true);
+            }
+        }
+
         const handleClickOutside = (event) => {
             if (emailBoxRef.current && !emailBoxRef.current.contains(event.target)) {
                 setActiveBox(null);
@@ -107,22 +131,7 @@ function Login() {
     }, []);
     //<-----------Handle Login------------->
     const handleLogin = async () => {
-        try {
-            const result = (await axios.post(`/api/v1/auth/login`, obj, {
-                withCredentials: true,
-            })).data;
-            console.log(result.data)
-            dispatch(login({ userData: result.data?.user, role: result.data.user?.role }));
-            setToast(true)
-            navigate('/app/Dashboard');
-            setObj({ email: '', password: '' });
-
-        } catch (error) {
-            setToast(true);
-            setAlert(true);
-            setError(true)
-            console.log('Login error: ', error?.response?.data || error);
-        }
+        await performLogin(obj, false);
     };
 
     return (
@@ -199,7 +208,11 @@ function Login() {
                         }
                     </EmailBox>
                     <div style={{ display: 'flex', margin: '10px', fontSize: '13px' }}>
-                        <Form.Check label="Remember me" onClick={() => setCookies()} />
+                        <Form.Check
+                            label="Remember me"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                        />
                         <p style={{ float: 'right', marginLeft: 'auto' }}>Forgot password?</p>
                     </div>
                 </Form.Group>

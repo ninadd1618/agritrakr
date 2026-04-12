@@ -14,7 +14,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 const Header = styled(Box)`
-  margin: 3% 0 1% 0;
+  margin: 8px 0 10px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,6 +30,7 @@ const Controls = styled(Box)`
 const Section = styled(Box)`
   background: #fff;
   border-radius: 12px;
+  margin-top: 18px;
   padding: 16px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 `;
@@ -222,7 +223,6 @@ export default function SoilTableView({ dates }) {
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-    saveAs(blob, `nutrient-${type}-${mode}.xlsx`);
   };
 
   return (

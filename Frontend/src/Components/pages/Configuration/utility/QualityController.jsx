@@ -16,22 +16,91 @@ import { toast } from 'react-toastify';
 
 const Component = styled(Box)`
   margin-top: 7%;
-  margin-left: 2%;
+  margin-left: 0;
   justify-content: center;
   height: auto;
   margin-bottom: 2% !important;
+  width: 100%;
 
   @media (max-width: 600px) {
     margin-top: 20%;
-    margin-left: 5%;
+    margin-left: 0;
   }
 `;
 
-const Header = styled(Box)`
+const TopBar = styled(Box)`
+  background-color: hsl(0deg 0% 95.29%);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+`;
+
+const NameAndDateSection = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-width: 0;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 16px;
+  }
+`;
+
+const NameSection = styled(Box)`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  justify-content: center;
+  align-items: center;
+
+  .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f2765;
+    text-align: center;
+  }
+`;
+
+const DateSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .date-range {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f2765;
+  }
+`;
+
+const RightControls = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 const CardsGrid = styled.div`
@@ -50,16 +119,12 @@ const Card = styled.div`
 `;
 
 const Container = styled(Box)`
-  padding: 20px;
+  padding: 24px;
   max-width: 100%;
-  margin: 0 auto;
-
-  @media (min-width: 650px) {
-    max-width: 1200px;
-  }
+  margin: 0;
 
   @media (max-width: 650px) {
-    padding: 10px;
+    padding: 12px;
   }
 `;
 
@@ -137,11 +202,18 @@ const QualityController = () => {
     avgDelta: null,
   });
 
+  const formatDateRange = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const startFormatted = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endFormatted = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${startFormatted} -> ${endFormatted}`;
+  };
+
   // Fetch both soil and plant data together to avoid flickering
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        console.log('QualityController - Fetching with dates:', startDate, 'to', endDate);
         // Fetch soil data
         const soilUrl = `/api/v1/soil/data?limit=500&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
         const soilRes = await axios.get(soilUrl);
@@ -150,8 +222,6 @@ const QualityController = () => {
         // Fetch ideal values
         const idealsRes = await axios.get('/api/v1/soil/ideals');
         const idealsData = idealsRes.data?.data || {};
-
-        console.log('QualityController - Rows:', rows.length, 'Ideals:', idealsData);
 
         let avgNutrient = null, soilPH = null, nitrogen = null, avgDelta = null;
         let goodCount = 0, warningCount = 0, criticalCount = 0;
@@ -163,14 +233,11 @@ const QualityController = () => {
           // Data is sorted descending by timestamp from API, so index 0 is newest (latest)
           const latest = rows[0];
 
-          console.log('QualityController - Latest row:', latest);
-
           // Calculate average nutrient as percentage
           const nutrientPercentages = [];
           nutrientKeys.forEach(key => {
             const value = latest[key];
             const ideal = idealsData[key];
-            console.log(`QualityController - ${key}: value=${value}, ideal=${ideal}`);
             if (ideal && ideal > 0 && value != null && value > 0) {
               const percentage = (value / ideal) * 100;
               nutrientPercentages.push(Math.min(percentage, 100)); // Cap at 100%
@@ -184,8 +251,6 @@ const QualityController = () => {
             avgNutrient = null;
           }
 
-          console.log('QualityController - Nutrient Percentages:', nutrientPercentages, 'Avg:', avgNutrient);
-
           // Count metrics by status (Good, Warning, Critical) - using all nutrients
           nutrientKeys.forEach(key => {
             const value = latest[key];
@@ -197,8 +262,6 @@ const QualityController = () => {
               else goodCount++;
             }
           });
-
-          console.log('QualityController - Status Counts:', { goodCount, warningCount, criticalCount });
 
           // soil pH: use latest reading
           soilPH = latest?.pH ?? null;
@@ -369,29 +432,34 @@ const QualityController = () => {
 
   return (
     <Component>
-      <Header>
-        <Typography
-          sx={{
-            fontSize: { xs: 24, sm: 30 },
-            fontWeight: 700,
-            color: "#1b5e20",
-          }}
-        >
-          Farm Performance Report
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 1 }}>
-          <Datepicker />
-          <Button variant="contained" sx={{
-            marginLeft: 'auto',
-            background: 'linear-gradient(135deg, #66bb6a 0%, #aed581 100%)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #4caf50 0%, #9ccc65 100%)',
-            }
-          }} onClick={exportReport}>Download Report</Button>
-        </Box>
-      </Header>
-
       <Container>
+        <TopBar>
+          <NameAndDateSection>
+            <NameSection>
+              <div className="value">Farm Performance Report</div>
+            </NameSection>
+            <DateSection>
+              <div className="label">Date Range</div>
+              <div className="date-range">{formatDateRange()}</div>
+            </DateSection>
+          </NameAndDateSection>
+          <RightControls>
+            <Datepicker />
+            <Button
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #66bb6a 0%, #aed581 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #4caf50 0%, #9ccc65 100%)',
+                }
+              }}
+              onClick={exportReport}
+            >
+              Download Report
+            </Button>
+          </RightControls>
+        </TopBar>
+
         {/* Top Summary cards - Average Nutrient and Status Overview */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 2, marginBottom: 3 }}>
           <Card>

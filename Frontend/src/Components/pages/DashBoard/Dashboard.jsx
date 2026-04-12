@@ -1,12 +1,74 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import Navbar from "../../Navbar/Navbar";
+import Datepicker from "../../DateTimePicker/DatePicker";
 import styled from "styled-components";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+
+const TopBar = styled(Box)`
+  background-color: hsl(0deg 0% 95.29%);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+`;
+
+const NameAndDateSection = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 16px;
+  }
+`;
+
+const NameSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+  .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f2765;
+        text-align: center;
+  }
+`;
+
+const DateSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .date-range {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f2765;
+  }
+`;
 
 const Header = styled(Box)`
   background-color: hsl(0deg 0% 95.29%);
@@ -558,6 +620,18 @@ const Dashboard = ({ isOpen, toggle }) => {
         { key: 'magnesium', label: 'Magnesium (Mg)', unit: 'ppm' }
     ];
 
+    // Format date range for display in top bar
+    const formatDateRange = () => {
+        if (!dates || dates.length < 2) {
+            return "All Dates";
+        }
+        const startDate = new Date(dates[0]);
+        const endDate = new Date(dates[1]);
+        const startFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const endFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return `${startFormatted} -> ${endFormatted}`;
+    };
+
     if (loading) {
         return (
             <GridContainer isOpen={isOpen}>
@@ -571,10 +645,6 @@ const Dashboard = ({ isOpen, toggle }) => {
 
     return (
         <GridContainer isOpen={isOpen}>
-            <Header isOpen={isOpen}>
-                <Navbar />
-            </Header>
-
             <div style={{
                 padding: 24,
                 background: 'white',
@@ -583,6 +653,22 @@ const Dashboard = ({ isOpen, toggle }) => {
                 boxSizing: 'border-box',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
             }}>
+                {/* Top Bar with Name and Date Section */}
+                <TopBar>
+                    <NameAndDateSection>
+                        <NameSection>
+                            <div className="value">Dashboard</div>
+                        </NameSection>
+                        <DateSection>
+                            <div className="label">Date Range</div>
+                            <div className="date-range">{formatDateRange()}</div>
+                        </DateSection>
+                    </NameAndDateSection>
+                    <Box sx={{ color: '#2e7d32' }}>
+                        <Datepicker />
+                    </Box>
+                </TopBar>
+
                 {/* Summary Overview */}
                 <div style={{ marginBottom: 24 }}>
                     <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Summary Overview</h2>

@@ -3,16 +3,12 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
-  Button,
-  Grid,
-  Typography,
   Menu,
   MenuItem,
   IconButton,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import Datepicker from "../../DateTimePicker/DatePicker";
-import { Container, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { useReactToPrint } from "react-to-print";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -22,48 +18,91 @@ import { SoilTableView } from "./utility";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 // Styled components for consistent layout
-const CenteredContainer = styled.div`
+const TopBar = styled(Box)`
+  background-color: hsl(0deg 0% 95.29%);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 12px;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+`;
+
+const NameAndDateSection = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-width: 0;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 16px;
+  }
+`;
+
+const RightControls = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+`;
+
+const NameSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 
+  .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f2765;
+    text-align: center;
+  }
 `;
 
-const ButtonContainer = styled.div`
+const DateSection = styled(Box)`
   display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  background-color: #f3f3f3;
-  height: 7vh;
-  border-radius: 4vh;
+  flex-direction: column;
+  gap: 4px;
 
-  button {
-    flex: 1;
-    color: #0f2765;
+  .label {
+    font-size: 12px;
+    color: #999;
     font-weight: 600;
-    background-color: transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0 10px;
-    border-radius: 2vh 0 0 2vh;
+    text-transform: uppercase;
+  }
 
-    &:hover {
-      background-color: hsl(48.62deg, 82.95%, 61.37%);
-      color: #0f2765;
-    }
+  .date-range {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f2765;
+  }
+`;
 
-    &.active {
-      background-color: hsl(48.62deg, 82.95%, 61.37%);
-    }
+const GridContainer = styled.div`
+  padding-top: 70px;  /* clear the global fixed header */
+  display: block;
+  min-height: 100vh;
+  width: 100%;
 
-    &:not(:last-child) {
-      border-right: 2px inset #eecf4b;
-      border-radius: 0 0 0 0;
-    }
-
-    &:last-child {
-      border-radius: 0 2vh 2vh 0;
-    }
+  @media (max-width: 768px) {
+    padding-top: 60px;
   }
 `;
 
@@ -80,7 +119,7 @@ const ReportContent = forwardRef(
     };
 
     return (
-      <div ref={ref} style={{ paddingTop: "2%", width: "100%" }}>
+      <div ref={ref} style={{ paddingTop: 0, width: "100%" }}>
         <SoilTableView dates={dates} />
       </div>
     );
@@ -90,8 +129,7 @@ const ReportContent = forwardRef(
 // Main Report component
 const Report = ({ isOpen, toggle }) => {
   // State variables to manage report types and data
-  const [TableR, setTableR] = useState(true);
-  const [activeButton, setActiveButton] = useState("table");
+  const [TableR] = useState(true);
   const componentPDF = useRef();
   const tableRef = useRef();
   const dates = useSelector((state) => state.datePicker.dates);
@@ -170,46 +208,6 @@ const Report = ({ isOpen, toggle }) => {
     toast.success("Data downloaded succesfully");
   };
 
-  const tableHandler = () => {
-    setTableR(true);
-    setActiveButton("table");
-  };
-  // const machineHandler = () => {
-  //   setProR(false);
-  //   setPlantR(false);
-  //   setDownR(false);
-  //   setEnergyR(false);
-  //   setMachineR(true);
-  //   // setQualR(false);
-  //   setTotalR(false);
-  //   // setShiftR(false);
-  //   setActiveButton("machine");
-  // };
-
-  // const totalHandler = () => {
-  //   setProR(false);
-  //   setPlantR(false);
-  //   setDownR(false);
-  //   setEnergyR(false);
-  //   setMachineR(false);
-  //   // setQualR(false);
-  //   setTotalR(true);
-  //   // setShiftR(false);
-  //   setActiveButton("total");
-  // };
-
-  // const shiftHandler = () => {
-  //   setProR(false);
-  //   setPlantR(false);
-  //   setDownR(false);
-  //   setEnergyR(false);
-  //   setMachineR(false);
-  //   setQualR(false);
-  //   setTotalR(true);
-  //   setShiftR(true);
-  //   setActiveButton("shift");
-  // };
-
   // Dropdown menu handlers
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -243,108 +241,69 @@ const Report = ({ isOpen, toggle }) => {
     handleClose();
   };
 
-  return (
-    <div style={{ display: "inline-block", width: "98%" }}>
-      <ToastContainer />
-      {/* Toolbar for date picker and action buttons */}
-      <div
-        className="header"
-        style={{
-          backgroundColor: "hsl(0deg 0% 95.29%)",
-          display: "flex",
-          position: "fixed",
-          width: isOpen ? "89%" : "100%",
-          padding: "1% 0% 0% 3%",
-        }}
-      >
-        <Grid
-          columnSpacing={2}
-          sx={{ display: "flex", float: "left", width: "97%" }}
-        >
-          <Grid item lg={7} sx={{ display: "inline-block", float: "left" }}>
-            <Typography
-              sx={{
-                color: "hsl(215.84deg 100% 15.1%)",
-                fontWeight: 800,
-                marginTop: "4px",
-                alignItems: "center",
-              }}
-            >
-              Reports
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            lg={5}
-            sx={{ marginLeft: "auto", boxShadow: "none", float: "right" }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                sx={{ color: "hsl(215.84deg 100% 15.1%)", marginRight: "1%" }}
-              >
-                <Datepicker />
-              </Box>
-              <Button
-                sx={{ color: "hsl(215.84deg 100% 15.1%)", fontWeight: 500 }}
-              >
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip variant="light" id="button-tooltip-2">
-                      Refresh
-                    </Tooltip>
-                  }
-                >
-                  <RefreshIcon />
-                </OverlayTrigger>
-              </Button>
-              <IconButton
-                aria-label="more"
-                id="more-vert-button"
-                aria-controls={anchorEl ? "long-menu" : undefined}
-                aria-expanded={anchorEl ? "true" : undefined}
-                aria-haspopup="true"
-                onClick={handleClick}
-                sx={{ color: "hsl(215.84deg 100% 15.1%)", marginRight: "1%" }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem onClick={() => handleMenuItemClick("pdf")}>
-                  Download as PDF
-                </MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick("excel")}>
-                  Download as Excel
-                </MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick("csv")}>
-                  Download as CSV
-                </MenuItem>
-              </Menu>
-            </Box>
-          </Grid>
-        </Grid>
-      </div>
+  // Format date range for display in top bar
+  const formatDateRange = () => {
+    if (!dates || dates.length < 2) {
+      return "All Dates";
+    }
+    const startDate = new Date(dates[0]);
+    const endDate = new Date(dates[1]);
+    const startFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${startFormatted} -> ${endFormatted}`;
+  };
 
+  return (
+    <GridContainer>
+      <ToastContainer />
       {/* Main content container */}
       <Container
-        style={{ marginTop: "7%", marginLeft: isOpen ? "2%" : "5%" }}
+        fluid
+        style={{ marginTop: 16, paddingLeft: 24, paddingRight: 24, boxSizing: "border-box" }}
       >
-        <CenteredContainer>
-          <ButtonContainer>
-            {/* Buttons to switch between different reports */}
-            <Button
-              className={activeButton === "table" ? "active" : ""}
-              onClick={tableHandler}
-              sx={{ color: "#0f2765", fontWeight: "600",borderRight: "2px dotted #0f2765", fontSize:'14px' }}
+        {/* Top Bar with Name and Date Section */}
+        <TopBar>
+          <NameAndDateSection>
+            <NameSection>
+              <div className="value">Table View</div>
+            </NameSection>
+            <DateSection>
+              <div className="label">Date Range</div>
+              <div className="date-range">{formatDateRange()}</div>
+            </DateSection>
+          </NameAndDateSection>
+          <RightControls>
+            <Box sx={{ color: "#2e7d32" }}>
+              <Datepicker />
+            </Box>
+            <IconButton
+              aria-label="more"
+              id="more-vert-button"
+              aria-controls={anchorEl ? "long-menu" : undefined}
+              aria-expanded={anchorEl ? "true" : undefined}
+              aria-haspopup="true"
+              onClick={handleClick}
+              sx={{ color: "hsl(215.84deg 100% 15.1%)" }}
             >
-              Table View
-            </Button>
-          </ButtonContainer>
-        </CenteredContainer>
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={() => handleMenuItemClick("pdf")}>
+                Download as PDF
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick("excel")}>
+                Download as Excel
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick("csv")}>
+                Download as CSV
+              </MenuItem>
+            </Menu>
+          </RightControls>
+        </TopBar>
 
         {/* Render selected report content */}
         <Box ref={tableRef}>
@@ -357,7 +316,7 @@ const Report = ({ isOpen, toggle }) => {
           />
         </Box>
       </Container>
-    </div>
+    </GridContainer>
   );
 };
 

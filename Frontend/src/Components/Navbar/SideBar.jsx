@@ -45,6 +45,9 @@ const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
       // Clear Redux state
       dispatch(logout());
 
+      // Disable auto-login until a successful manual login
+      localStorage.setItem('disableAutoLogin', '1');
+
       // Clear any stored cookies
       document.cookie.split(";").forEach((c) => {
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
@@ -57,6 +60,7 @@ const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
       console.error('Logout error:', error);
       // Even if API fails, clear local state and navigate
       dispatch(logout());
+      localStorage.setItem('disableAutoLogin', '1');
       navigate('/');
     }
   };

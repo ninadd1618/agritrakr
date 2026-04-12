@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import Navbar from "../../Navbar/Navbar";
+import Datepicker from "../../DateTimePicker/DatePicker";
 import styled from "styled-components";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
@@ -35,6 +36,67 @@ const GridContainer = styled.div`
   @media (max-width: 768px) {
     padding-top: 60px;
     width: 100%;
+  }
+`;
+
+const TopBar = styled(Box)`
+  background-color: hsl(0deg 0% 95.29%);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+`;
+
+const NameAndDateSection = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 16px;
+  }
+`;
+
+const NameSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f2765;
+    text-align: center;
+  }
+`;
+
+const DateSection = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .date-range {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f2765;
   }
 `;
 
@@ -153,6 +215,18 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
 
 
 
+  // Format date range for display in top bar
+  const formatDateRange = () => {
+    if (!dates || dates.length < 2) {
+      return "All Dates";
+    }
+    const startDate = new Date(dates[0]);
+    const endDate = new Date(dates[1]);
+    const startFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${startFormatted} -> ${endFormatted}`;
+  };
+
   if (loading) {
     return (
       <GridContainer isOpen={isOpen}>
@@ -176,17 +250,29 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
 
   return (
     <GridContainer isOpen={isOpen}>
-      <Header isOpen={isOpen}>
-        <Navbar title="Mini-Dashboard" />
-      </Header>
-
       <div style={{
         padding: 24,
         background: 'white',
         minHeight: '100vh',
-        marginTop: 70,
+        marginTop: 0,
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
+        {/* Top Bar with Name and Date Section */}
+        <TopBar>
+          <NameAndDateSection>
+            <NameSection>
+              <div className="value">Mini-Dashboard</div>
+            </NameSection>
+            <DateSection>
+              <div className="label">Date Range</div>
+              <div className="date-range">{formatDateRange()}</div>
+            </DateSection>
+          </NameAndDateSection>
+          <Box sx={{ color: '#2e7d32' }}>
+            <Datepicker />
+          </Box>
+        </TopBar>
+
         {/* Compact Summary Cards - 3 Key Metrics */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
