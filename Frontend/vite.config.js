@@ -36,6 +36,11 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			},
+			"/api/v1/devices": {
+				target: "http://127.0.0.1:4000",
+				changeOrigin: true,
+				secure: false,
+			},
 			"/reports": {
 				target: "http://127.0.0.1:4000",
 				changeOrigin: true,

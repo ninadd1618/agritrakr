@@ -117,30 +117,13 @@ function DeviceSettings() {
       
       if (response.data?.success) {
         setDevices(response.data.data || []);
+      } else {
+        console.error('Fetch failed:', response.data);
+        setDevices([]);
       }
     } catch (error) {
       console.error('Error fetching devices:', error);
-      // For now, set some mock data to show the UI
-      setDevices([
-        {
-          _id: '1',
-          name: 'Survey Device 1',
-          deviceId: 'sensor-survey-001',
-          mode: 'survey',
-          location: 'Field A',
-          description: 'Primary survey device for field monitoring',
-          status: 'online'
-        },
-        {
-          _id: '2',
-          name: 'Fit & Forget Device 1',
-          deviceId: 'sensor-ff-001',
-          mode: 'fit_and_forget',
-          location: 'Field B',
-          description: 'Automated monitoring device',
-          status: 'online'
-        }
-      ]);
+      setDevices([]);
     } finally {
       setLoading(false);
     }
@@ -179,32 +162,49 @@ function DeviceSettings() {
 
       console.log('Saving device:', payload);
 
-      // For now, just close the dialog and show success
-      setOpenDialog(false);
-      
-      // Mock save - in real implementation, call API
+      let response;
       if (editingDevice) {
-        console.log('Would update device:', editingDevice._id);
+        // Update existing device
+        response = await axios.patch(`/api/v1/devices/${editingDevice._id}`, payload, {
+          withCredentials: true
+        });
       } else {
-        console.log('Would create new device');
+        // Create new device
+        response = await axios.post('/api/v1/devices', payload, {
+          withCredentials: true
+        });
       }
-      
-      // Refresh the list
-      fetchDevices();
+
+      if (response.data?.success) {
+        setOpenDialog(false);
+        fetchDevices(); // Refresh the list
+      } else {
+        console.error('Save failed:', response.data);
+        alert('Failed to save device. Please try again.');
+      }
       
     } catch (error) {
       console.error('Error saving device:', error);
+      alert(error.response?.data?.message || 'Failed to save device. Please try again.');
     }
   };
 
   const handleDeleteDevice = async (deviceId) => {
     if (window.confirm('Are you sure you want to delete this device?')) {
       try {
-        console.log('Would delete device:', deviceId);
-        // Mock delete - in real implementation, call API
-        fetchDevices();
+        const response = await axios.delete(`/api/v1/devices/${deviceId}`, {
+          withCredentials: true
+        });
+
+        if (response.data?.success) {
+          fetchDevices(); // Refresh the list
+        } else {
+          console.error('Delete failed:', response.data);
+          alert('Failed to delete device. Please try again.');
+        }
       } catch (error) {
         console.error('Error deleting device:', error);
+        alert(error.response?.data?.message || 'Failed to delete device. Please try again.');
       }
     }
   };
