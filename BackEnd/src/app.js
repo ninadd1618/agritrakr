@@ -14,8 +14,10 @@ const app = express();
 
 // Middleware setup
 app.use(cors({
-  origin: env.CORS_ORIGIN || '*',
+  origin: env.CORS_ORIGIN || ['http://localhost:5173', 'https://agrotech-frontend.onrender.com'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
@@ -38,6 +40,11 @@ app.get('/health', (req, res) => {
     status: 'ok',
     mongo: mongoState,
   });
+});
+
+// Render health check endpoint
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 // Import routes

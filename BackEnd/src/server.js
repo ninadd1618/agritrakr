@@ -6,6 +6,7 @@ import { env } from './config/env.js';
 
 dotenv.config();
 
+// Render provides PORT env var, use it if available
 const PORT = process.env.PORT || env.PORT || 4000;
 
 console.log("ENV CHECK:", {

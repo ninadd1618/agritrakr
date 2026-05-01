@@ -22,8 +22,7 @@ apiClient.interceptors.request.use(
   (config) => {
     // Log requests in development
     if (import.meta.env.DEV) {
-      const fullUrl = config.baseURL + config.url;
-      console.log(`API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     }
     return config;
   },
