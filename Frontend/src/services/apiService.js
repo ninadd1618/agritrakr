@@ -8,8 +8,7 @@ import apiClient from '@config/api';
 export const authAPI = {
   login: (credentials) => apiClient.post('/api/v1/auth/login', credentials),
 
-  // 🔥 FIXED: register route (CHANGE THIS BASED ON YOUR BACKEND)
-  register: (userData) => apiClient.post('/api/v1/auth/signup', userData),
+  register: (userData) => apiClient.post('/api/v1/auth/register', userData),
 
   logout: () => apiClient.post('/api/v1/auth/logout'),
   refreshToken: () => apiClient.post('/api/v1/auth/refresh-token'),

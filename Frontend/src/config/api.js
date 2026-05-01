@@ -3,11 +3,11 @@ import axios from 'axios';
 // Base URL logic
 const baseURL = import.meta.env.DEV
   ? '' // use Vite proxy in development
-  : import.meta.env.VITE_API_URL; // MUST be set in Netlify
+  : import.meta.env.VITE_API_URL || 'https://agrotech-backend-436b.onrender.com'; // fallback
 
-// Fail fast if missing in production
-if (!import.meta.env.DEV && !baseURL) {
-  throw new Error("VITE_API_URL is not defined. Fix your Netlify environment variables.");
+// Warning if missing (but don't crash)
+if (!import.meta.env.DEV && !import.meta.env.VITE_API_URL) {
+  console.warn('⚠️ VITE_API_URL not set, using fallback URL');
 }
 
 export const API_BASE_URL = baseURL;
