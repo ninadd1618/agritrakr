@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
 	// Set the third parameter to '' to load env files from relative path.
 	const env = loadEnv(mode, process.cwd(), '')
 	
-	// Use environment variable or fallback to localhost for development
-	const backendUrl = env.VITE_API_URL || 'http://127.0.0.1:4000'
+	// Always use localhost for development proxy, ignore production URL
+	const backendUrl = mode === 'development' ? 'http://127.0.0.1:4000' : (env.VITE_API_URL || 'http://127.0.0.1:4000')
 	
 	return {
 		plugins: [react()],
