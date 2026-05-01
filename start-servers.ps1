@@ -1,4 +1,4 @@
-# Start Backend and Frontend Servers
+# Start AgroTech Backend and Frontend Servers
 Write-Host "Stopping any existing node processes..." -ForegroundColor Yellow
 Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2

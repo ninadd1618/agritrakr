@@ -82,3 +82,7 @@ docker-compose.override.yml
 # ----------------------
 *.tgz
 *.pid
+
+
+# executables
+*.exe

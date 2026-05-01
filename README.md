@@ -1,6 +1,6 @@
-# Flowmen Common
+# AgroTech
 
-Monorepo for the Flowmen application, containing backend APIs and frontend dashboards/reports.
+Monorepo for the AgroTech application, containing backend APIs and frontend dashboards/reports.
 
 ## Structure
 

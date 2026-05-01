@@ -4,7 +4,7 @@ import { appLogger } from './src/config/logger.js';
 
 // MQTT Broker settings (same as MQTT Explorer)
 const MQTT_BROKER = 'mqtt://broker.hivemq.com:1883';
-const MQTT_TOPIC = 'flowmen/sensors/+/soil';  // + is wildcard for device ID
+const MQTT_TOPIC = 'agrotech/sensors/+/soil';  // + is wildcard for device ID
 
 // Your backend API URL
 const API_URL = 'http://localhost:4000/api/v1/soil/data';
@@ -16,7 +16,7 @@ console.log(`🎯 Forwarding to API: ${API_URL}`);
 
 // Connect to MQTT broker
 const client = mqtt.connect(MQTT_BROKER, {
-    clientId: 'flowmen-mqtt-bridge-' + Math.random().toString(16).substr(2, 8),
+    clientId: 'agrotech-mqtt-bridge-' + Math.random().toString(16).substr(2, 8),
     clean: true,
     reconnectPeriod: 5000,
 });
@@ -39,7 +39,7 @@ client.on('message', async (topic, message) => {
     try {
         console.log(`\n📥 Received message on topic: ${topic}`);
 
-        // Extract device ID from topic (e.g., flowmen/sensors/ESP32-001/soil)
+        // Extract device ID from topic (e.g., agrotech/sensors/ESP32-001/soil)
         const topicParts = topic.split('/');
         const deviceId = topicParts[2] || 'unknown';
 

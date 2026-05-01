@@ -1,7 +1,7 @@
 {
-  "name": "flowmen-backend",
+  "name": "agrotech-backend",
   "version": "1.0.0",
-  "description": "A clean, modern, secure, scalable Node.js backend for Flowmen-common.",
+  "description": "A clean, modern, secure, scalable Node.js backend for AgroTech.",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

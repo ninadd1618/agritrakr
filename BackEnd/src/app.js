@@ -26,7 +26,7 @@ app.use(morgan('dev', { stream: requestLogger.stream }));
 
 // Health check routes
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to Flowmen Backend API!' });
+  res.status(200).json({ message: 'Welcome to AgroTech Backend API!' });
 });
 
 app.get('/health', (req, res) => {

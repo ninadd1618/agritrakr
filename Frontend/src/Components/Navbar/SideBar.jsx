@@ -70,7 +70,8 @@ const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
       {isMobile && isOpen && <div className="sidebar-backdrop" onClick={toggle} />}
       <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
         <div className="top_section">
-          <h1 className={`logo ${isOpen ? "show" : "hide"}`}>iStromen</h1>
+          {/* <img src="../src/assets/agritrackr.svg" alt="AgriTrackr" style={{ width: '30px', height: '30px' }} /> */}
+          <h1 className={`logo ${isOpen ? "show" : "hide"}`}>AgriTrackr</h1>
           <div className="bars">
             <FaBars onClick={toggle} />
           </div>
