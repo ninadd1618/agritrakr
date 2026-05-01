@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '@config/api';
 import {
     Alert,
     Box,
@@ -56,7 +56,7 @@ function FarmSettings() {
     const fetchFarms = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/v1/settings/farms', { withCredentials: true });
+            const res = await apiClient.get('/api/v1/settings/farms');
             setFarms(res.data?.data || []);
         } catch (err) {
             showSnackbar(err?.response?.data?.message || 'Failed to load farms', 'error');
@@ -98,13 +98,13 @@ function FarmSettings() {
             };
 
             if (editingId) {
-                await axios.put(`/api/v1/settings/farms/${editingId}`, payload, { withCredentials: true });
+                await apiClient.put(`/api/v1/settings/farms/${editingId}`, payload);
                 showSnackbar('Farm updated successfully');
                 if (mapFarm?._id === editingId) {
                     setMapFarm((prev) => ({ ...prev, ...payload }));
                 }
             } else {
-                await axios.post('/api/v1/settings/farms', payload, { withCredentials: true });
+                await apiClient.post('/api/v1/settings/farms', payload);
                 showSnackbar('Farm added successfully');
             }
             resetForm();
@@ -132,7 +132,7 @@ function FarmSettings() {
 
         try {
             setSaving(true);
-            await axios.delete(`/api/v1/settings/farms/${farmId}`, { withCredentials: true });
+            await apiClient.delete(`/api/v1/settings/farms/${farmId}`);
             showSnackbar('Farm deleted successfully');
             if (editingId === farmId) resetForm();
             if (mapFarm?._id === farmId) setMapFarm(null);

@@ -1,11 +1,8 @@
-import axios from 'axios'
-
-
+import apiClient from '@config/api';
 
 export const getMembers = async()=>{
-    const URL = "http://172.104.242.7:3000/member/data"
     try {
-        const response =  await axios.get(URL);
+        const response = await apiClient.get('/api/v1/settings/members');
         return response.data;
     } catch (error) {
         console.log(error)

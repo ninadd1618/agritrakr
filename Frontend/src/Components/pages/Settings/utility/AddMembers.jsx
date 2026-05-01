@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { InputField, PasswordInput, checkPassword } from '../../login-reg/Utility';
-import axios from 'axios';
+import apiClient from '@config/api';
 //icons
 import { TbMailFilled } from "react-icons/tb";
 import { FaUser } from "react-icons/fa";
@@ -158,11 +158,7 @@ function AddMembers() {
         }
 
         try {
-            await axios.post(`${URL}/auth/register`, obj, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            await apiClient.post('/api/v1/auth/register', obj);
             console.log('Register Successfully', obj);
             setObj({
                 firstname: '',

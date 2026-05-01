@@ -6,7 +6,7 @@ import { BiSolidLock } from "react-icons/bi";
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import apiClient from '../../../config/api';
+import apiClient from '@config/api';
 import { login, logout } from '../../../redux/authSlice';
 import { Popup } from '../containts';
 

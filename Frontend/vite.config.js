@@ -12,6 +12,15 @@ export default defineConfig(({ mode }) => {
 	
 	return {
 		plugins: [react()],
+		resolve: {
+			alias: {
+				'@': '/src',
+				'@config': '/src/config',
+				'@services': '/src/services',
+				'@utils': '/src/utils',
+				'@components': '/src/Components',
+			}
+		},
 		server: {
 			proxy: {
 				"/api/v1/auth": {

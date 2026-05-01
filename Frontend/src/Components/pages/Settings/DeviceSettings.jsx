@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import apiClient from '../../../config/api';
+import apiClient from '@config/api';
 import styled from 'styled-components';
 import { 
   Card, 
