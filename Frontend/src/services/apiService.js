@@ -1,16 +1,16 @@
 /**
  * Centralized API Service for AgriTrackr
- * 
- * This service provides a consistent interface for all API calls
- * and handles authentication, error handling, and environment configuration.
  */
 
 import apiClient from '@config/api';
 
-// Auth API
+// ================= AUTH API =================
 export const authAPI = {
   login: (credentials) => apiClient.post('/api/v1/auth/login', credentials),
-  register: (userData) => apiClient.post('/api/v1/auth/register', userData),
+
+  // 🔥 FIXED: register route (CHANGE THIS BASED ON YOUR BACKEND)
+  register: (userData) => apiClient.post('/api/v1/auth/signup', userData),
+
   logout: () => apiClient.post('/api/v1/auth/logout'),
   refreshToken: () => apiClient.post('/api/v1/auth/refresh-token'),
   changePassword: (passwordData) => apiClient.post('/api/v1/auth/change-password', passwordData),
@@ -18,7 +18,7 @@ export const authAPI = {
   updateAccount: (userData) => apiClient.patch('/api/v1/auth/update-account', userData),
 };
 
-// User Settings API
+// ================= SETTINGS API =================
 export const settingsAPI = {
   getProfile: () => apiClient.get('/api/v1/settings/profile'),
   updateProfile: (profileData) => apiClient.patch('/api/v1/settings/profile', profileData),
@@ -31,7 +31,7 @@ export const settingsAPI = {
   getMembers: () => apiClient.get('/api/v1/settings/members'),
 };
 
-// Device Management API
+// ================= DEVICE API =================
 export const deviceAPI = {
   getDevices: () => apiClient.get('/api/v1/devices'),
   createDevice: (deviceData) => apiClient.post('/api/v1/devices', deviceData),
@@ -41,7 +41,7 @@ export const deviceAPI = {
   updateDeviceStatus: (deviceId, statusData) => apiClient.patch(`/api/v1/devices/${deviceId}/status`, statusData),
 };
 
-// Soil Data API
+// ================= SOIL API =================
 export const soilAPI = {
   getSoilData: (params) => apiClient.get('/api/v1/soil/data', { params }),
   getSoilIdeals: () => apiClient.get('/api/v1/soil/ideals'),
@@ -54,14 +54,14 @@ export const soilAPI = {
   setActiveCrop: (cropId) => apiClient.put(`/api/v1/soil/crops/${cropId}`, { isActive: true }),
 };
 
-// Reports API
+// ================= REPORTS API =================
 export const reportsAPI = {
   getPlantReport: (params) => apiClient.get('/api/v1/reports/plant', { params }),
   getSoilReport: (params) => apiClient.get('/api/v1/reports/soil', { params }),
   getFarmReport: (farmId, params) => apiClient.get(`/api/v1/reports/farm/${farmId}`, { params }),
 };
 
-// OEE/PLC API
+// ================= OEE API =================
 export const oeeAPI = {
   getOEEData: (params) => apiClient.get('/api/v1/oee/data', { params }),
   getMachineAvailability: (params) => apiClient.get('/api/v1/oee/availability', { params }),
@@ -70,18 +70,22 @@ export const oeeAPI = {
   getTotalProduction: (params) => apiClient.get('/api/v1/oee/production', { params }),
 };
 
-// Data Upload API
+// ================= DATA API =================
 export const dataAPI = {
-  uploadSoilData: (formData) => apiClient.post('/api/v1/data/soil', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  uploadFinalData: (formData) => apiClient.post('/api/v1/data/final', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  uploadSoilData: (formData) =>
+    apiClient.post('/api/v1/data/soil', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  uploadFinalData: (formData) =>
+    apiClient.post('/api/v1/data/final', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
   getDataStats: () => apiClient.get('/api/v1/data/stats'),
 };
 
-// Export all APIs for easy importing
+// ================= EXPORT =================
 export default {
   auth: authAPI,
   settings: settingsAPI,
@@ -91,25 +95,3 @@ export default {
   oee: oeeAPI,
   data: dataAPI,
 };
-
-/**
- * Usage Examples:
- * 
- * import { authAPI, deviceAPI } from '../services/apiService';
- * 
- * // Login
- * const result = await authAPI.login({ email, password });
- * 
- * // Get devices
- * const devices = await deviceAPI.getDevices();
- * 
- * // Create device
- * const newDevice = await deviceAPI.createDevice(deviceData);
- * 
- * // Get soil data with parameters
- * const soilData = await soilAPI.getSoilData({ 
- *   start: '2024-01-01', 
- *   end: '2024-12-31', 
- *   limit: 100 
- * });
- */

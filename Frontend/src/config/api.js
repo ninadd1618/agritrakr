@@ -1,50 +1,59 @@
-// Centralized API configuration
 import axios from 'axios';
 
-// Use relative URLs in development (to go through Vite proxy)
-// Use full URLs in production
-const baseURL = import.meta.env.DEV 
-  ? ''  // Empty string for relative URLs in development
-  : (import.meta.env.VITE_API_URL || 'http://localhost:4000');
+// Base URL logic
+const baseURL = import.meta.env.DEV
+  ? '' // use Vite proxy in development
+  : import.meta.env.VITE_API_URL; // MUST be set in Netlify
+
+// Fail fast if missing in production
+if (!import.meta.env.DEV && !baseURL) {
+  throw new Error("VITE_API_URL is not defined. Fix your Netlify environment variables.");
+}
 
 export const API_BASE_URL = baseURL;
 
-export const apiClient = axios.create({
-  baseURL: baseURL,
+// Axios instance
+const apiClient = axios.create({
+  baseURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Optional: Add request/response interceptors
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Log requests in development
     if (import.meta.env.DEV) {
-      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+      console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    // Log responses in development
     if (import.meta.env.DEV) {
-      console.log(`API Response: ${response.status} ${response.config.url}`);
+      console.log(`[API RESPONSE] ${response.status} ${response.config.url}`);
     }
     return response;
   },
   (error) => {
-    // Handle common errors
+    // Handle auth errors
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
+      console.warn("Unauthorized → redirecting to login");
       window.location.href = '/login';
     }
+
+    // Log useful debugging info
+    console.error("API ERROR:", {
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      message: error.message,
+    });
+
     return Promise.reject(error);
   }
 );
