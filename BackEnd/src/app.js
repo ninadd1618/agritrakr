@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware setup
 app.use(cors({
-  origin: env.CORS_ORIGIN || ['http://localhost:5173', 'https://agrotech-frontend.onrender.com'],
+  origin: env.CORS_ORIGIN || ["https://agritrackr.netlify.app"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
