@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+import apiClient from '../../../config/api';
 import styled from 'styled-components';
 import { 
   Card, 
@@ -111,9 +111,7 @@ function DeviceSettings() {
   const fetchDevices = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/v1/devices', {
-        withCredentials: true
-      });
+      const response = await apiClient.get('/api/v1/devices');
       
       if (response.data?.success) {
         setDevices(response.data.data || []);
@@ -165,14 +163,10 @@ function DeviceSettings() {
       let response;
       if (editingDevice) {
         // Update existing device
-        response = await axios.patch(`/api/v1/devices/${editingDevice._id}`, payload, {
-          withCredentials: true
-        });
+        response = await apiClient.patch(`/api/v1/devices/${editingDevice._id}`, payload);
       } else {
         // Create new device
-        response = await axios.post('/api/v1/devices', payload, {
-          withCredentials: true
-        });
+        response = await apiClient.post('/api/v1/devices', payload);
       }
 
       if (response.data?.success) {
@@ -192,9 +186,7 @@ function DeviceSettings() {
   const handleDeleteDevice = async (deviceId) => {
     if (window.confirm('Are you sure you want to delete this device?')) {
       try {
-        const response = await axios.delete(`/api/v1/devices/${deviceId}`, {
-          withCredentials: true
-        });
+        const response = await apiClient.delete(`/api/v1/devices/${deviceId}`);
 
         if (response.data?.success) {
           fetchDevices(); // Refresh the list

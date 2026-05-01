@@ -6,7 +6,7 @@ import { BiSolidLock } from "react-icons/bi";
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import axios from 'axios';
+import apiClient from '../../../config/api';
 import { login, logout } from '../../../redux/authSlice';
 import { Popup } from '../containts';
 
@@ -65,9 +65,7 @@ function Login() {
 
     const performLogin = async (credentials, isAuto = false, shouldRemember = rememberMe) => {
         try {
-            const result = (await axios.post(`/api/v1/auth/login`, credentials, {
-                withCredentials: true,
-            })).data;
+            const result = (await apiClient.post(`/api/v1/auth/login`, credentials)).data;
             dispatch(login({ userData: result.data?.user, role: result.data.user?.role }));
             if (!isAuto) {
                 // Successful manual login re-enables future auto-login.
