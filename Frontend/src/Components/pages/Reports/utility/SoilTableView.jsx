@@ -62,7 +62,7 @@ export default function SoilTableView({ dates }) {
         params.type = type;
         params.mode = mode;
         params.limit = 500; // Increase limit to get all data in date range
-        const res = await axios.get("/api/v1/soil/table", { params });
+        const res = await apiClient.get("/api/v1/soil/table", { params });
         const data = res?.data?.data || {};
         setColumns(data.columns || []);
         // ensure table rows are sorted latest-first by date/timestamp
@@ -80,11 +80,11 @@ export default function SoilTableView({ dates }) {
         if (dates && dates[1]) soilParams.end = dates[1];
         soilParams.limit = 500; // Increase limit to get all data in date range
         // Note: NOT passing type parameter here - we need ALL nutrients for status calculation
-        const soilRes = await axios.get("/api/v1/soil/data", { params: soilParams });
+        const soilRes = await apiClient.get("/api/v1/soil/data", { params: soilParams });
         const soilData = soilRes.data?.data || [];
 
         // Fetch ideal values
-        const idealsRes = await axios.get("/api/v1/soil/ideals");
+        const idealsRes = await apiClient.get("/api/v1/soil/ideals");
         const idealsData = idealsRes.data?.data || {};
 
         // Get latest raw data for status calculation - use sorted descending by timestamp

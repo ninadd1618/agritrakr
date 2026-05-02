@@ -13,7 +13,7 @@ import { SiWheniwork } from "react-icons/si";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
-import axios from 'axios';
+import apiClient from '@config/api';
 
 const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
   const dispatch = useDispatch();
@@ -38,9 +38,7 @@ const Sidebar = ({ children, isOpen, toggle, isMobile = false }) => {
   const handleLogout = async () => {
     try {
       // Call backend logout API
-      await axios.post('/api/v1/auth/logout', {}, {
-        withCredentials: true,
-      });
+      await apiClient.post('/api/v1/auth/logout', {});
 
       // Clear Redux state
       dispatch(logout());

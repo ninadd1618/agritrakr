@@ -10,7 +10,7 @@ import { FaUserPlus, FaUser, FaBars } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import barData from "../pages/api/barData.js";
 import { logout } from "../../redux/authSlice";
-import axios from "axios";
+import apiClient from '@config/api';
 
 /* ================= STYLES (UNCHANGED) ================= */
 
@@ -83,11 +83,7 @@ const Home = ({ isOpen, isMobile = false, sidebarWidth = 0, toggle }) => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        "/api/v1/auth/logout",
-        {},
-        { withCredentials: true }
-      );
+      await apiClient.post("/api/v1/auth/logout", {});
     } catch (err) {
       console.error("Logout API error:", err);
     } finally {
