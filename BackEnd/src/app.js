@@ -14,12 +14,19 @@ const app = express();
 
 // Middleware setup
 app.use(cors({
-  origin: env.CORS_ORIGIN || [
-    "https://agritrackr.netlify.app",
-    "https://agrotech.netlify.app", 
-    "https://*.netlify.app",
-    "http://localhost:5173"
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost and any Netlify subdomain
+    if (origin.includes("localhost:") || origin.includes(".netlify.app")) {
+      return callback(null, true);
+    }
+    
+    // Log blocked origins for debugging
+    console.log("CORS blocked origin:", origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -28,6 +35,23 @@ app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(express.static('public'));
 app.use(cookieParser());
+
+// Debug middleware for authentication
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/v1/settings')) {
+    console.log('=== AUTH DEBUG ===');
+    console.log('Path:', req.path);
+    console.log('Origin:', req.headers.origin);
+    console.log('Cookies:', req.headers.cookie);
+    console.log('Auth Headers:', {
+      authorization: req.headers.authorization,
+      cookie: req.headers.cookie ? 'Present' : 'Missing'
+    });
+    console.log('================');
+  }
+  next();
+});
+
 app.use(helmet());
 app.use(morgan('dev', { stream: requestLogger.stream }));
 
