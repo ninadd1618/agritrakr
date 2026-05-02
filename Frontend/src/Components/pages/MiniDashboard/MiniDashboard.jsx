@@ -4,7 +4,7 @@ import Navbar from "../../Navbar/Navbar";
 import Datepicker from "../../DateTimePicker/DatePicker";
 import styled from "styled-components";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie, ResponsiveContainer } from 'recharts';
-import axios from 'axios';
+import apiClient from '@config/api';
 import { useSelector } from 'react-redux';
 
 const Header = styled(Box)`
@@ -119,12 +119,8 @@ function MiniDashboard({ isOpen, toggle, isVisi = true }) {
         params.append('limit', '500');
 
         const [dataRes, idealsRes] = await Promise.all([
-          axios.get(`/api/v1/soil/data?${params.toString()}`, {
-            withCredentials: true,
-          }),
-          axios.get('/api/v1/soil/ideals', {
-            withCredentials: true,
-          })
+          apiClient.get(`/api/v1/soil/data?${params.toString()}`),
+          apiClient.get('/api/v1/soil/ideals')
         ]);
         setSoilData(dataRes.data.data || dataRes.data?.data || []);
 

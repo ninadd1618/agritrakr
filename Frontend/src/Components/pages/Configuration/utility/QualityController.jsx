@@ -6,7 +6,7 @@ import PlantReport from '../../Reports/utility/plantReport';
 import Datepicker from '../../../DateTimePicker/DatePicker';
 // Note: SoilTableView intentionally removed per request
 
-import axios from 'axios';
+import apiClient from '@config/api';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
@@ -216,11 +216,11 @@ const QualityController = () => {
       try {
         // Fetch soil data
         const soilUrl = `/api/v1/soil/data?limit=500&start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`;
-        const soilRes = await axios.get(soilUrl);
+        const soilRes = await apiClient.get(soilUrl);
         const rows = soilRes.data?.data || [];
 
         // Fetch ideal values
-        const idealsRes = await axios.get('/api/v1/soil/ideals');
+        const idealsRes = await apiClient.get('/api/v1/soil/ideals');
         const idealsData = idealsRes.data?.data || {};
 
         let avgNutrient = null, soilPH = null, nitrogen = null, avgDelta = null;
@@ -292,7 +292,7 @@ const QualityController = () => {
         }
 
         // Fetch plant data
-        const plantRes = await axios.get(`/api/v1/reports/plant?start=${encodeURIComponent(startDate)}&stop=${encodeURIComponent(endDate)}`);
+        const plantRes = await apiClient.get(`/api/v1/reports/plant?start=${encodeURIComponent(startDate)}&stop=${encodeURIComponent(endDate)}`);
         const plantData = plantRes.data?.data || [];
 
         // Calculate water usage based on estimated yield
@@ -339,8 +339,8 @@ const QualityController = () => {
       const stop = dates?.[1] || endDate;
 
       // Fetch local plant data
-      const plantRes = await axios.get(`/api/v1/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`);
-      const soilRes = await axios.get('/api/v1/soil/data?limit=500');
+      const plantRes = await apiClient.get(`/api/v1/reports/plant?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`);
+      const soilRes = await apiClient.get(`/api/v1/soil/data?limit=500`);
 
       const plantData = plantRes.data?.data || [];
       const soilData = soilRes.data?.data || [];

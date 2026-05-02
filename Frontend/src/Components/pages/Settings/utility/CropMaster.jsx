@@ -63,7 +63,7 @@ function CropMaster() {
     const fetchCrops = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/v1/soil/crops', { withCredentials: true });
+            const res = await apiClient.get('/api/v1/soil/crops');
             setCrops(res.data?.data || []);
         } catch (err) {
             setError(err?.response?.data?.message || 'Failed to load crop list');
@@ -97,9 +97,9 @@ function CropMaster() {
             setError('');
             const payload = toPayload(formData);
             if (editingId) {
-                await axios.put(`/api/v1/soil/crops/${editingId}`, payload, { withCredentials: true });
+                await apiClient.put(`/api/v1/soil/crops/${editingId}`, payload);
             } else {
-                await axios.post('/api/v1/soil/crops', payload, { withCredentials: true });
+                await apiClient.post('/api/v1/soil/crops', payload);
             }
             resetForm();
             await fetchCrops();
@@ -127,7 +127,7 @@ function CropMaster() {
         try {
             setSaving(true);
             setError('');
-            await axios.delete(`/api/v1/soil/crops/${cropId}`, { withCredentials: true });
+            await apiClient.delete(`/api/v1/soil/crops/${cropId}`);
             if (editingId === cropId) resetForm();
             await fetchCrops();
         } catch (err) {
@@ -142,7 +142,7 @@ function CropMaster() {
         try {
             setSaving(true);
             setError('');
-            await axios.put(`/api/v1/soil/crops/${crop._id}`, { isActive: true }, { withCredentials: true });
+            await apiClient.put(`/api/v1/soil/crops/${crop._id}`, { isActive: true });
             await fetchCrops();
         } catch (err) {
             setError(err?.response?.data?.message || 'Failed to set active crop');
