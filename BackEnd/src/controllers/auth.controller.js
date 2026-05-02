@@ -22,9 +22,12 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, password, username } = req.body;
+  const { fullName, firstname, lastname, email, password, username, role, companyName, teamMembers } = req.body;
 
-  if ([fullName, email, password, username].some((field) => field?.trim() === "")) {
+  // Handle both fullName and firstname/lastname combinations
+  const finalFullName = fullName || `${firstname || ''} ${lastname || ''}`.trim();
+
+  if ([finalFullName, email, password, username].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -37,10 +40,13 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const user = await User.create({
-    fullName,
+    fullName: finalFullName,
     email,
     password,
     username,
+    role: role || 'Operator',
+    companyName: companyName || '',
+    teamMembers: teamMembers || [],
   });
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -79,7 +85,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Always true for production deployment
+    sameSite: 'None', // Critical for cross-domain cookies
+    domain: process.env.COOKIE_DOMAIN || undefined, // Allow cross-domain cookies
   };
 
   return res
@@ -108,7 +116,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Always true for production deployment
+    sameSite: 'None', // Critical for cross-domain cookies
+    domain: process.env.COOKIE_DOMAIN || undefined, // Allow cross-domain cookies
   };
 
   return res
@@ -143,7 +153,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true, // Always true for production deployment
+    sameSite: 'None', // Critical for cross-domain cookies
+    domain: process.env.COOKIE_DOMAIN || undefined, // Allow cross-domain cookies
     };
 
     const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshTokens(user._id);

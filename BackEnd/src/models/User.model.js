@@ -43,6 +43,20 @@ const userSchema = new Schema(
       trim: true,
       default: '',
     },
+    role: {
+      type: String,
+      enum: ['Operator', 'Admin', 'Manager'],
+      default: 'Operator',
+    },
+    companyName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    teamMembers: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
   },
   { timestamps: true }
 );
