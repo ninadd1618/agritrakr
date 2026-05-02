@@ -174,7 +174,7 @@ function FarmBoundaryMap({ farm, onClose }) {
             try {
                 const [boundaryRes, soilRes] = await Promise.all([
                     apiClient.get(`/api/v1/settings/farms/${farm._id}/boundary`),
-                    axios.get(`/api/v1/soil/farm/${farm._id}`, { withCredentials: false }).catch(() => ({ data: { data: [] } })),
+                    apiClient.get(`/api/v1/soil/farm/${farm._id}`).catch(() => ({ data: { data: [] } })),
                 ]);
                 const boundary = boundaryRes.data?.data?.boundary || [];
                 if (boundary.length >= 3) { setPoints(boundary); setSavedPoints(boundary); }

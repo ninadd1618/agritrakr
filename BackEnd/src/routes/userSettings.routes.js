@@ -35,5 +35,16 @@ router.route('/farms/:id/boundary')
   .get(getBoundary)
   .put(saveBoundary);
 
+// ── Members ───────────────────────────────────────────────────────────────────
+router.route('/members')
+  .get((req, res) => {
+    // Temporary placeholder - return empty members array
+    res.status(200).json({
+      success: true,
+      data: [],
+      message: "Members endpoint - not implemented yet"
+    });
+  });
+
 export default router;
 

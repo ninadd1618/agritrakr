@@ -41,16 +41,22 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle auth errors
+    // Handle auth errors - only redirect on explicit auth endpoints
     if (error.response?.status === 401) {
-      console.warn("Unauthorized → redirecting to login");
-      window.location.href = '/login';
+      const isAuthEndpoint = error.config?.url?.includes('/auth/');
+      if (isAuthEndpoint) {
+        console.warn("Auth endpoint failed → redirecting to login");
+        window.location.href = '/login';
+      } else {
+        console.warn("401 error on non-auth endpoint - not redirecting");
+      }
     }
 
     // Log useful debugging info
     console.error("API ERROR:", {
       url: error.config?.url,
       baseURL: error.config?.baseURL,
+      status: error.response?.status,
       message: error.message,
     });
 
