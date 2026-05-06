@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import mqtt from 'mqtt';
 import axios from 'axios';
 import { appLogger } from './src/config/logger.js';
@@ -7,7 +10,8 @@ const MQTT_BROKER = 'mqtt://broker.hivemq.com:1883';
 const MQTT_TOPIC = 'agrotech/sensors/+/soil';  // + is wildcard for device ID
 
 // Your backend API URL
-const API_URL = 'http://localhost:4000/api/v1/soil/data';
+// const API_URL = 'http://localhost:4000/api/v1/soil/data';
+const API_URL = process.env.API_URL;
 
 console.log('🔌 Starting MQTT Bridge...');
 console.log(`📡 Connecting to MQTT broker: ${MQTT_BROKER}`);
