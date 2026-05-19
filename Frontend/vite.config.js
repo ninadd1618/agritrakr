@@ -21,6 +21,22 @@ export default defineConfig(({ mode }) => {
 				'@components': '/src/Components',
 			}
 		},
+		build: {
+			outDir: 'dist',
+			sourcemap: false,
+			minify: 'terser',
+			terserOptions: {
+				compress: { drop_console: true },
+			},
+			rollupOptions: {
+				output: {
+					manualChunks: {
+						'vendor': ['react', 'react-dom', 'react-router-dom'],
+						'mui': ['@mui/material', '@mui/icons-material'],
+					}
+				}
+			}
+		},
 		server: {
 			proxy: {
 				"/api/v1/auth": {

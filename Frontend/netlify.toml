@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18.18.0"
+  VITE_API_URL = "https://agrotech-backend-436b.onrender.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://agrotech-backend-436b.onrender.com/:splat"
+  status = 200
+  force = true
+
+[context.production]
+  environment = { VITE_API_URL = "https://agrotech-backend-436b.onrender.com" }
+
+[context.deploy-preview]
+  environment = { VITE_API_URL = "https://agrotech-backend-436b.onrender.com" }
+
+[context.branch-deploy]
+  environment = { VITE_API_URL = "https://agrotech-backend-436b.onrender.com" }

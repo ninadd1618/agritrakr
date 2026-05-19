@@ -228,7 +228,7 @@ function Login() {
                     }} onClick={handleLogin}>Login</button>
                 </div>
                 <div className='d-flex justify-content-center mt-3 text-sm'>
-                    Don't have an account? &nbsp; <p className='text-sky-500 hover:text-sky-600 hover:font-semibold' onClick={() => navigate('/register')} style={{ cursor: 'pointer' }}> Create</p>
+                    Don't have an account? &nbsp; <p className='text-sky-500 hover:text-sky-600 hover:font-semibold' onClick={() => navigate('/signup')} style={{ cursor: 'pointer' }}> Create</p>
                 </div>
                 <div className='text-center text-sm' style={{ padding: '11px 0px' }}>
                     <div className='d-flex justify-content-center mt-2'>
